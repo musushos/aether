@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="aether_region_input_v1">
+  <copyright>
+    Copyright (C) 2024 Aether Compositor Authors
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+  </copyright>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       aether_region_input_manager_v1
+       Global factory — clients bind it via wl_registry.
+       ══════════════════════════════════════════════════════════════════════ -->
+
+  <interface name="aether_region_input_manager_v1" version="1">
+    <description summary="manager for per-surface input region declarations">
+      This global interface is the entry point for the region-input protocol.
+      Clients bind it via wl_registry and use it to obtain an
+      aether_region_input_v1 object for any wl_surface they own.
+
+      Through the per-surface object the client declares which axis-aligned
+      rectangles within the surface should receive pointer/touch input
+      ("active regions").  Any part of the surface that lies outside every
+      active region is treated as a "dead zone": pointer and touch events
+      that land in a dead zone pass through the surface to whatever is
+      rendered beneath it, exactly as if the surface were not there.
+
+      This protocol is the preferred alternative to the XShape / input-shape
+      technique because the compositor only needs to consult a small, static
+      list of rectangles at the moment an input event arrives — no continuous
+      coordinate recalculation is required.
+
+      DESIGN CONTRACT
+      ───────────────
+      • Default (no controller created):   whole surface receives input.
+      • Controller created, no commit yet: whole surface receives input.
+      • After commit() with zero regions:  whole surface is a dead zone.
+      • After commit() with ≥1 region:     only those rectangles are live;
+                                           the rest is dead zone.
+
+      Coordinates are in surface-local pixels (relative to the top-left
+      corner of the wl_surface).
+    </description>
+
+    <!-- ── Requests ─────────────────────────────────────────────────── -->
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the manager object">
+        Destroys the manager.  All aether_region_input_v1 objects previously
+        created by this manager remain valid.
+      </description>
+    </request>
+
+    <request name="get_input_regions">
+      <description summary="create an input-region controller for a surface">
+        Create an aether_region_input_v1 for the given wl_surface.
+        The surface must be owned by the calling client.
+
+        It is a protocol error to create more than one
+        aether_region_input_v1 for the same wl_surface while the previous
+        one is still alive.
+      </description>
+      <arg name="id"      type="new_id" interface="aether_region_input_v1"
+           summary="new input-region controller"/>
+      <arg name="surface" type="object" interface="wl_surface"
+           summary="the surface to attach the controller to"/>
+    </request>
+
+  </interface>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       aether_region_input_v1
+       Per-surface input-region controller.
+       ══════════════════════════════════════════════════════════════════════ -->
+
+  <interface name="aether_region_input_v1" version="1">
+    <description summary="input-region controller for one surface">
+      Manages the set of active input rectangles attached to a single
+      wl_surface.
+
+      Changes are double-buffered:
+        1. Call set_input_region() one or more times to accumulate the
+           desired active rectangles in the pending list.
+        2. Call clear_input_regions() at any time to wipe the pending list
+           without committing.
+        3. Call commit() to atomically replace the live region set with the
+           current pending list.
+
+      The compositor replies with the "committed" event once it has applied
+      the new region set.  From that point forward, pointer and touch events
+      that land outside every active rectangle are passed through to the
+      surface stack below.
+
+      When the surface is destroyed the controller is automatically cleaned
+      up and the surface reverts to full input reception.
+    </description>
+
+    <!-- ── Enumerations ──────────────────────────────────────────────── -->
+
+    <enum name="error">
+      <entry name="already_constructed" value="0"
+             summary="a region_input object already exists for this surface"/>
+      <entry name="bad_surface"         value="1"
+             summary="the surface is not owned by this client"/>
+      <entry name="bad_region"          value="2"
+             summary="region has invalid dimensions (width or height must be > 0)"/>
+    </enum>
+
+    <!-- ── Requests ─────────────────────────────────────────────────── -->
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the controller and remove all regions">
+        Destroys this controller.  The compositor immediately removes all
+        active input regions from the surface; the surface reverts to
+        receiving input across its full extent.
+      </description>
+    </request>
+
+    <request name="set_input_region">
+      <description summary="add an active input rectangle to the pending list">
+        Append an axis-aligned rectangle to the pending input-region list.
+        Pointer and touch events that land inside this rectangle will be
+        delivered to the surface normally.
+
+        Multiple calls accumulate: each call adds one rectangle.  Call
+        clear_input_regions() to start over.  Takes effect on commit().
+
+        x, y are in surface-local pixels.  width and height must be > 0;
+        violating this is a protocol error (bad_region).
+      </description>
+      <arg name="x"      type="int" summary="x offset in surface-local pixels"/>
+      <arg name="y"      type="int" summary="y offset in surface-local pixels"/>
+      <arg name="width"  type="int" summary="region width  in pixels (must be > 0)"/>
+      <arg name="height" type="int" summary="region height in pixels (must be > 0)"/>
+    </request>
+
+    <request name="clear_input_regions">
+      <description summary="clear the pending input-region list">
+        Discard all rectangles accumulated since the last commit().  After
+        this call the pending list is empty.
+
+        If commit() is called while the pending list is empty the surface
+        becomes fully transparent to input (all events pass through).
+
+        Does not affect the currently committed (live) region set.
+      </description>
+    </request>
+
+    <request name="commit">
+      <description summary="apply the pending region list">
+        Atomically replace the live input-region set with the current pending
+        list and clear the pending list.
+
+        The compositor sends the "committed" event once the new set is in
+        place.  From that moment input hit-testing uses the new list.
+      </description>
+    </request>
+
+    <!-- ── Events ───────────────────────────────────────────────────── -->
+
+    <event name="committed">
+      <description summary="input regions have been applied by the compositor">
+        Sent after each commit() once the compositor has installed the new
+        input-region set.  The count field reports how many active rectangles
+        are now live (0 means the surface is fully pass-through).
+
+        Clients may use this as a synchronisation point before drawing.
+      </description>
+      <arg name="region_count" type="uint"
+           summary="number of active input rectangles now in effect"/>
+    </event>
+
+  </interface>
+
+</protocol>

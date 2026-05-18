@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="aether_shell_manager">
+  <copyright>
+    Copyright (C) 2024 Aether Compositor Authors
+  </copyright>
+
+  <interface name="aether_shell_manager" version="1">
+    <description summary="Aether shell elements management protocol">
+      This global interface is responsible for managing shell-specific features
+      that dictate window arrangements, such as setting reserved areas (struts)
+      around the screen edges and changing layouts.
+    </description>
+
+    <!-- ── Requests ─────────────────────────────────────────────────────── -->
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the shell manager object">
+        Destroys the shell manager object.
+      </description>
+    </request>
+
+    <request name="set_reserved_areas">
+      <description summary="set forbidden edge margins on an output">
+        Request that the compositor reserve pixel bands along the edges of
+        the output identified by output_id.  No window — tiled, floating, or
+        maximised — will be placed inside the reserved bands.
+
+        All values are in logical pixels.  Pass 0 for any edge to clear that
+        margin.  The compositor replies with a reserved_areas_applied event
+        once it has recalculated the work area and re-arranged all windows.
+      </description>
+      <arg name="output_id" type="int" summary="output to target (0 for primary)"/>
+      <arg name="top"       type="int" summary="reserved pixels from the top edge"/>
+      <arg name="bottom"    type="int" summary="reserved pixels from the bottom edge"/>
+      <arg name="left"      type="int" summary="reserved pixels from the left edge"/>
+      <arg name="right"     type="int" summary="reserved pixels from the right edge"/>
+    </request>
+
+    <event name="reserved_areas_applied">
+      <description summary="reserved areas have been applied">
+        Sent in response to set_reserved_areas after the compositor has
+        updated the work area for the given output and re-arranged windows.
+        Echo of the values that were actually applied.
+      </description>
+      <arg name="output_id" type="int" summary="output index"/>
+      <arg name="top"       type="int" summary="applied top margin in logical pixels"/>
+      <arg name="bottom"    type="int" summary="applied bottom margin in logical pixels"/>
+      <arg name="left"      type="int" summary="applied left margin in logical pixels"/>
+      <arg name="right"     type="int" summary="applied right margin in logical pixels"/>
+    </event>
+
+    <request name="set_layout">
+      <description summary="set the active window layout on an output">
+        Request that the compositor switch the active layout on the output
+        identified by output_id.
+
+        layout_index is a zero-based index into the compositor's internal
+        layouts[] array.  The compositor validates the index; out-of-range
+        values are silently ignored.  A layout_state event is broadcast to
+        all bound clients after a successful change.
+      </description>
+      <arg name="output_id"    type="int" summary="output to target (0 for primary)"/>
+      <arg name="layout_index" type="int" summary="zero-based index into the layouts array"/>
+    </request>
+
+    <event name="layout_state">
+      <description summary="layout state for one output">
+        Sent once immediately after the client binds the interface, and again
+        whenever the active layout on any output changes.
+
+        layout_symbols is a newline-separated list of all available layout
+        symbols in index order (e.g. "[]=\n&gt;&lt;&gt;\n[M]").
+        layout_index is the zero-based index of the currently active layout.
+      </description>
+      <arg name="output_id"     type="int"    summary="output index"/>
+      <arg name="layout_index"  type="int"    summary="index of the active layout"/>
+      <arg name="layout_symbols" type="string" summary="newline-separated layout symbols"/>
+    </event>
+  </interface>
+</protocol>

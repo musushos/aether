@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="aether_surface_effects_v1">
+  <copyright>
+    Copyright (C) 2024 Aether Compositor Authors
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the "Software"),
+    to deal in the Software without restriction, including without limitation
+    the rights to use, copy, modify, merge, publish, distribute, sublicense,
+    and/or sell copies of the Software, and to permit persons to whom the
+    Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice (including the next
+    paragraph) shall be included in all copies or substantial portions of the
+    Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+    THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+  </copyright>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       aether_surface_effects_manager_v1
+       Global factory — clients bind it via wl_registry.
+       ══════════════════════════════════════════════════════════════════════ -->
+
+  <interface name="aether_surface_effects_manager_v1" version="1">
+    <description summary="manager for per-surface compositor effects">
+      This global interface is the entry point for the surface-effects
+      protocol.  Clients bind it via wl_registry and use it to obtain an
+      aether_surface_effects_v1 object for any wl_surface they own.
+
+      Through the per-surface object the client can submit a "region map":
+      an ordered set of axis-aligned rectangles, each tagged with a bitmask
+      of desired visual effects (blur, shadow, …).  On commit() the
+      compositor materialises those effects as scene-graph nodes placed
+      inside the surface's scene tree, so they are clipped and transformed
+      exactly like the surface itself.
+
+      Coordinates supplied for regions are in surface-local pixels
+      (i.e. relative to the top-left corner of the wl_surface).
+    </description>
+
+    <!-- ── Requests ─────────────────────────────────────────────────── -->
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the manager object">
+        Destroys the manager.  All aether_surface_effects_v1 objects
+        previously created by this manager remain valid.
+      </description>
+    </request>
+
+    <request name="get_surface_effects">
+      <description summary="create a surface-effects controller for a surface">
+        Create an aether_surface_effects_v1 for the given wl_surface.
+        The surface must be owned by the calling client.
+
+        It is a protocol error to create more than one
+        aether_surface_effects_v1 for the same wl_surface while the
+        previous one is still alive.
+      </description>
+      <arg name="id"      type="new_id" interface="aether_surface_effects_v1"
+           summary="new effects controller"/>
+      <arg name="surface" type="object" interface="wl_surface"
+           summary="the surface to attach effects to"/>
+    </request>
+
+  </interface>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       aether_surface_effects_v1
+       Per-surface effect controller.
+       ══════════════════════════════════════════════════════════════════════ -->
+
+  <interface name="aether_surface_effects_v1" version="1">
+    <description summary="compositor effects controller for one surface">
+      Manages a collection of effect regions attached to a single wl_surface.
+
+      Changes to regions (add_region, region geometry / params) are
+      double-buffered: they take effect only when commit() is called.  The
+      compositor replies with the committed event once it has applied the
+      new region map.
+
+      When the surface is destroyed all its effect regions are automatically
+      removed.
+    </description>
+
+    <!-- ── Enumerations ──────────────────────────────────────────────── -->
+
+    <enum name="effect" bitfield="true">
+      <description summary="visual effect types (bitfield)">
+        Each value represents one visual effect that can be requested for
+        a region.  Multiple effects may be OR-ed together.
+      </description>
+      <entry name="blur"   value="1" summary="background (backdrop) blur"/>
+      <entry name="shadow" value="2" summary="drop shadow around the region"/>
+    </enum>
+
+    <enum name="error">
+      <entry name="already_constructed" value="0"
+             summary="a surface_effects object already exists for this surface"/>
+      <entry name="bad_surface"         value="1"
+             summary="the surface is not owned by this client"/>
+      <entry name="bad_region"          value="2"
+             summary="region has invalid dimensions (width or height ≤ 0)"/>
+    </enum>
+
+    <!-- ── Requests ─────────────────────────────────────────────────── -->
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the surface-effects controller">
+        Destroys the controller and removes all associated effect regions
+        from the compositor scene.  All child aether_effect_region_v1
+        objects become inert.
+      </description>
+    </request>
+
+    <request name="add_region">
+      <description summary="add a new effect region (pending until commit)">
+        Register a new axis-aligned rectangle in surface-local coordinates
+        and request one or more visual effects for it.
+
+        The region is pending until commit() is called.  Coordinates are
+        in surface-local pixels.  Width and height must be greater than 0.
+
+        Returns a new aether_effect_region_v1 that can be used to update
+        the region's geometry or per-effect parameters before committing.
+      </description>
+      <arg name="id"      type="new_id" interface="aether_effect_region_v1"
+           summary="new effect region object"/>
+      <arg name="x"       type="int"    summary="x offset in surface-local pixels"/>
+      <arg name="y"       type="int"    summary="y offset in surface-local pixels"/>
+      <arg name="width"   type="int"    summary="region width in pixels (must be &gt; 0)"/>
+      <arg name="height"  type="int"    summary="region height in pixels (must be &gt; 0)"/>
+      <arg name="effects" type="uint"   summary="OR-ed bitmask of aether_surface_effects_v1.effect"/>
+    </request>
+
+    <request name="commit">
+      <description summary="apply all pending region changes">
+        Atomically apply all pending add_region / set_geometry / set_effects
+        / set_*_params changes.  The compositor tears down the current
+        scene nodes and rebuilds them from the new region list.
+
+        The compositor sends the committed event once the new nodes are in
+        place.
+      </description>
+    </request>
+
+    <!-- ── Events ───────────────────────────────────────────────────── -->
+
+    <event name="committed">
+      <description summary="effects have been applied by the compositor">
+        Sent after each commit() once the compositor has materialised the
+        new region map.  Clients may use this as a synchronisation point.
+      </description>
+    </event>
+
+  </interface>
+
+  <!-- ══════════════════════════════════════════════════════════════════════
+       aether_effect_region_v1
+       One axis-aligned effect rectangle within a surface.
+       ══════════════════════════════════════════════════════════════════════ -->
+
+  <interface name="aether_effect_region_v1" version="1">
+    <description summary="a single visual-effect region">
+      Represents one axis-aligned rectangle for which the client has
+      requested compositor-side visual effects.
+
+      All setter requests are pending until the parent surface-effects
+      object's commit() is called.
+    </description>
+
+    <!-- ── Requests ─────────────────────────────────────────────────── -->
+
+    <request name="destroy" type="destructor">
+      <description summary="remove this effect region (pending until commit)">
+        Mark this region for removal.  The compositor will destroy the
+        corresponding scene nodes on the next commit().
+      </description>
+    </request>
+
+    <request name="set_geometry">
+      <description summary="update region position and size (pending)">
+        Change the axis-aligned bounding box of this region in
+        surface-local pixels.  Width and height must be greater than 0.
+        Takes effect on the next commit().
+      </description>
+      <arg name="x"      type="int" summary="x offset in surface-local pixels"/>
+      <arg name="y"      type="int" summary="y offset in surface-local pixels"/>
+      <arg name="width"  type="int" summary="region width  (must be &gt; 0)"/>
+      <arg name="height" type="int" summary="region height (must be &gt; 0)"/>
+    </request>
+
+    <request name="set_effects">
+      <description summary="change the effect bitmask (pending)">
+        Replace the OR-ed effect bitmask for this region.
+        Takes effect on the next commit().
+      </description>
+      <arg name="effects" type="uint"
+           summary="OR-ed bitmask of aether_surface_effects_v1.effect"/>
+    </request>
+
+    <request name="set_blur_params">
+      <description summary="tune backdrop-blur parameters (pending)">
+        Adjust blur-specific rendering hints for this region.
+
+        ignore_transparent: when non-zero the compositor will skip blur
+        rendering in fully transparent sub-areas of the region (saves GPU
+        time for irregularly shaped glass panes).
+
+        Takes effect on the next commit().
+      </description>
+      <arg name="ignore_transparent" type="int"
+           summary="1 = skip blur under fully transparent pixels"/>
+    </request>
+
+    <request name="set_shadow_params">
+      <description summary="tune drop-shadow parameters (pending)">
+        Adjust shadow-specific rendering for this region.
+
+        blur_sigma controls the Gaussian spread of the shadow in pixels.
+        color_argb is a packed 32-bit ARGB colour (0xAARRGGBB) for the
+        shadow tint.
+
+        Takes effect on the next commit().
+      </description>
+      <arg name="blur_sigma"  type="int"  summary="shadow Gaussian sigma in pixels"/>
+      <arg name="color_argb"  type="uint" summary="shadow colour packed as 0xAARRGGBB"/>
+    </request>
+
+  </interface>
+
+</protocol>
