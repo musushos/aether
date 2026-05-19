@@ -339,6 +339,21 @@ typedef struct {
 	float globalcolor[4];
 	float overlaycolor[4];
 
+	/* switcher (Alt+Tab style window picker) */
+	float    switcher_card_color[4];      /* card background */
+	float    switcher_panel_color[4];     /* panel background */
+	float    switcher_outline_color[4];   /* panel outline */
+	float    switcher_select_color[4];    /* selected card highlight */
+	float    switcher_backdrop_color[4];  /* full-screen backdrop */
+	float    switcher_minimize_color[4];  /* dot for minimized windows */
+	float    switcher_maximize_color[4];  /* dot for maximized windows */
+	uint32_t switcher_max_cards;          /* 0 = unlimited */
+	uint32_t switcher_card_w_px;          /* card width hint */
+	uint32_t switcher_card_h_px;          /* card height hint */
+	uint32_t switcher_pad_px;             /* panel padding */
+	uint32_t switcher_gap_px;             /* gap between cards */
+	uint32_t switcher_modifier;           /* modifier that triggers commit on release */
+
 	int32_t log_level;
 	uint32_t capslock;
 
@@ -1230,6 +1245,14 @@ FuncType parse_func_name(char *func_name, Arg *arg, char *arg_value,
 		func = toggle_all_floating;
 	} else if (strcmp(func_name, "toggle_floating_compositor_mode") == 0) {
 		func = toggle_floating_compositor_mode;
+	} else if (strcmp(func_name, "switcher_forward") == 0) {
+		func = switcher_forward;
+	} else if (strcmp(func_name, "switcher_backward") == 0) {
+		func = switcher_backward;
+	} else if (strcmp(func_name, "switcher_commit_bind") == 0) {
+		func = switcher_commit_bind;
+	} else if (strcmp(func_name, "switcher_cancel_bind") == 0) {
+		func = switcher_cancel_bind;
 	} else {
 		return NULL;
 	}
@@ -1833,6 +1856,69 @@ bool parse_option(Config *config, char *key, char *value) {
 		} else {
 			convert_hex_to_rgba(config->urgentcolor, color);
 		}
+	} else if (strcmp(key, "switcher_card_color") == 0) {
+		int64_t color = parse_color(value);
+		if (color == -1) {
+			fprintf(stderr, "\033[1m\033[31m[ERROR]:\033[33m Invalid switcher_card_color: %s\n", value);
+			return false;
+		}
+		convert_hex_to_rgba(config->switcher_card_color, color);
+	} else if (strcmp(key, "switcher_panel_color") == 0) {
+		int64_t color = parse_color(value);
+		if (color == -1) {
+			fprintf(stderr, "\033[1m\033[31m[ERROR]:\033[33m Invalid switcher_panel_color: %s\n", value);
+			return false;
+		}
+		convert_hex_to_rgba(config->switcher_panel_color, color);
+	} else if (strcmp(key, "switcher_outline_color") == 0) {
+		int64_t color = parse_color(value);
+		if (color == -1) {
+			fprintf(stderr, "\033[1m\033[31m[ERROR]:\033[33m Invalid switcher_outline_color: %s\n", value);
+			return false;
+		}
+		convert_hex_to_rgba(config->switcher_outline_color, color);
+	} else if (strcmp(key, "switcher_select_color") == 0) {
+		int64_t color = parse_color(value);
+		if (color == -1) {
+			fprintf(stderr, "\033[1m\033[31m[ERROR]:\033[33m Invalid switcher_select_color: %s\n", value);
+			return false;
+		}
+		convert_hex_to_rgba(config->switcher_select_color, color);
+	} else if (strcmp(key, "switcher_backdrop_color") == 0) {
+		int64_t color = parse_color(value);
+		if (color == -1) {
+			fprintf(stderr, "\033[1m\033[31m[ERROR]:\033[33m Invalid switcher_backdrop_color: %s\n", value);
+			return false;
+		}
+		convert_hex_to_rgba(config->switcher_backdrop_color, color);
+	} else if (strcmp(key, "switcher_minimize_color") == 0) {
+		int64_t color = parse_color(value);
+		if (color == -1) {
+			fprintf(stderr, "\033[1m\033[31m[ERROR]:\033[33m Invalid switcher_minimize_color: %s\n", value);
+			return false;
+		}
+		convert_hex_to_rgba(config->switcher_minimize_color, color);
+	} else if (strcmp(key, "switcher_maximize_color") == 0) {
+		int64_t color = parse_color(value);
+		if (color == -1) {
+			fprintf(stderr, "\033[1m\033[31m[ERROR]:\033[33m Invalid switcher_maximize_color: %s\n", value);
+			return false;
+		}
+		convert_hex_to_rgba(config->switcher_maximize_color, color);
+	} else if (strcmp(key, "switcher_max_cards") == 0) {
+		config->switcher_max_cards = (uint32_t)atoi(value);
+	} else if (strcmp(key, "switcher_card_w") == 0) {
+		config->switcher_card_w_px = (uint32_t)atoi(value);
+	} else if (strcmp(key, "switcher_card_h") == 0) {
+		config->switcher_card_h_px = (uint32_t)atoi(value);
+	} else if (strcmp(key, "switcher_pad") == 0) {
+		config->switcher_pad_px = (uint32_t)atoi(value);
+	} else if (strcmp(key, "switcher_gap") == 0) {
+		config->switcher_gap_px = (uint32_t)atoi(value);
+	} else if (strcmp(key, "switcher_modifier") == 0) {
+		uint32_t m = parse_mod(value);
+		if (m != UINT32_MAX)
+			config->switcher_modifier = m;
 	} else if (strcmp(key, "scratchpadcolor") == 0) {
 		int64_t color = parse_color(value);
 		if (color == -1) {
@@ -3556,6 +3642,49 @@ void set_value_default() {
 	config.urgentcolor[1] = 0x40 / 255.0f;
 	config.urgentcolor[2] = 0x1f / 255.0f;
 	config.urgentcolor[3] = 1.0f;
+
+	/* switcher defaults — black transparent 50% */
+	config.switcher_card_color[0] = 0.0f;  /* black 50% */
+	config.switcher_card_color[1] = 0.0f;
+	config.switcher_card_color[2] = 0.0f;
+	config.switcher_card_color[3] = 0.5f;
+
+	config.switcher_panel_color[0] = 0.0f; /* black 50% */
+	config.switcher_panel_color[1] = 0.0f;
+	config.switcher_panel_color[2] = 0.0f;
+	config.switcher_panel_color[3] = 0.5f;
+
+	config.switcher_outline_color[0] = 0.0f; /* black 50% */
+	config.switcher_outline_color[1] = 0.0f;
+	config.switcher_outline_color[2] = 0.0f;
+	config.switcher_outline_color[3] = 0.5f;
+
+	config.switcher_select_color[0] = 1.0f; /* white 80% */
+	config.switcher_select_color[1] = 1.0f;
+	config.switcher_select_color[2] = 1.0f;
+	config.switcher_select_color[3] = 0.8f;
+
+	config.switcher_backdrop_color[0] = 0.0f;        /* black 50% */
+	config.switcher_backdrop_color[1] = 0.0f;
+	config.switcher_backdrop_color[2] = 0.0f;
+	config.switcher_backdrop_color[3] = 0.5f;
+
+	config.switcher_minimize_color[0] = 0xe6 / 255.0f; /* #E6A21E */
+	config.switcher_minimize_color[1] = 0xa2 / 255.0f;
+	config.switcher_minimize_color[2] = 0x1e / 255.0f;
+	config.switcher_minimize_color[3] = 1.0f;
+
+	config.switcher_maximize_color[0] = 0x32 / 255.0f; /* #32C864 */
+	config.switcher_maximize_color[1] = 0xc8 / 255.0f;
+	config.switcher_maximize_color[2] = 0x64 / 255.0f;
+	config.switcher_maximize_color[3] = 1.0f;
+
+	config.switcher_max_cards  = 0;    /* unlimited */
+	config.switcher_card_w_px  = 240;
+	config.switcher_card_h_px  = 180;
+	config.switcher_pad_px     = 16;
+	config.switcher_gap_px     = 12;
+	config.switcher_modifier   = WLR_MODIFIER_ALT;
 	config.scratchpadcolor[0] = 0x51 / 255.0f;
 	config.scratchpadcolor[1] = 0x6c / 255.0f;
 	config.scratchpadcolor[2] = 0x93 / 255.0f;

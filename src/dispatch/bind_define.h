@@ -1971,3 +1971,23 @@ int32_t toggle_floating_compositor_mode(const Arg *arg) {
 	printstatus();
 	return 0;
 }
+
+int32_t switcher_forward(const Arg *arg) {
+	switcherstep(&(Arg){.i = 1});
+	return 0;
+}
+
+int32_t switcher_backward(const Arg *arg) {
+	switcherstep(&(Arg){.i = -1});
+	return 0;
+}
+
+int32_t switcher_commit_bind(const Arg *arg) {
+	switchercommit();
+	return 0;
+}
+
+int32_t switcher_cancel_bind(const Arg *arg) {
+	switchercancel();
+	return 0;
+}

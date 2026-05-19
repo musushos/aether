@@ -72,3 +72,7 @@ int32_t toggle_monitor(const Arg *arg);
 int32_t scroller_stack(const Arg *arg);
 int32_t toggle_all_floating(const Arg *arg);
 int32_t toggle_floating_compositor_mode(const Arg *arg);
+int32_t switcher_forward(const Arg *arg);
+int32_t switcher_backward(const Arg *arg);
+int32_t switcher_commit_bind(const Arg *arg);
+int32_t switcher_cancel_bind(const Arg *arg);

@@ -237,6 +237,7 @@ struct ivec2 {
 	int32_t x, y, width, height;
 };
 
+#define AETHER_ARG_TYPEDEF
 typedef struct {
 	int32_t i;
 	int32_t i2;
@@ -873,6 +874,7 @@ static void hide_edge_snap_preview(void);
 static void apply_edge_snap(Client *c);
 
 #include "data/static_keymap.h"
+#include "switcher/switcher.h"
 #include "dispatch/bind_declare.h"
 #include "layout/layout.h"
 
@@ -4364,6 +4366,10 @@ void keypressmod(struct wl_listener *listener, void *data) {
 		last_group = group->wlr_group->keyboard.modifiers.group;
 		printstatus();
 	}
+
+	/* Commit the switcher if its modifier was released */
+	switcherupdatemods(
+		wlr_keyboard_get_modifiers(&group->wlr_group->keyboard));
 }
 
 void pending_kill_client(Client *c) {
@@ -7245,6 +7251,9 @@ static void setgeometrynotify(struct wl_listener *listener, void *data) {
 	motionnotify(0, NULL, 0, 0, 0, 0);
 }
 #endif
+
+/* ── Switcher (unity-build include) ── */
+#include "switcher/switcher.c"
 
 int32_t main(int32_t argc, char *argv[]) {
 	char *startup_cmd = NULL;
