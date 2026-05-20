@@ -90,9 +90,24 @@ c_args = [
   '-DSYSCONFDIR="@0@"'.format('/etc'),
 ]
 
+cpp_args = [
+  '-g',
+  '-Wno-unused-function',
+  '-DWLR_USE_UNSTABLE',
+  '-D_POSIX_C_SOURCE=200809L',
+  '-DVERSION="@0@"'.format(version_with_hash),
+  '-DSYSCONFDIR="@0@"'.format('/etc'),
+  '-std=c++20',
+]
+
 # 仅在 debug 选项启用时添加调试参数
 if get_option('asan')
   c_args += [
+    '-fsanitize=address',
+    '-fno-omit-frame-pointer',
+    '-fno-optimize-sibling-calls'
+  ]
+  cpp_args += [
     '-fsanitize=address',
     '-fno-omit-frame-pointer',
     '-fno-optimize-sibling-calls'
@@ -101,6 +116,7 @@ endif
 
 if xcb.found() and xlibs.found()
   c_args += '-DXWAYLAND'
+  cpp_args += '-DXWAYLAND'
 endif
 
 # 链接参数（根据 debug 状态添加 ASAN）
@@ -111,7 +127,7 @@ endif
 
 executable('aether',
   'src/aether.c',
-  'src/common/util.c',
+  'src/common/util.cpp',
   'src/ext-protocol/wlr_ext_workspace_v1.c',
   wayland_sources,
   dependencies : [
@@ -131,6 +147,7 @@ executable('aether',
   ],
   install : true,
   c_args : c_args,
+  cpp_args : cpp_args,
   link_args : link_args,
 )
 
@@ -161,6 +178,11 @@ executable('mmsg',
   c_args: [
     '-g',
     '-Wno-unused-function',
+  ],
+  cpp_args: [
+    '-g',
+    '-Wno-unused-function',
+    '-std=c++20',
   ],
 )
 

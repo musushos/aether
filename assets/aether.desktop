@@ -1,0 +1,8 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=aether
+DesktopNames=aether;wlroots
+Comment=aether WM
+Exec=aether
+Icon=aether
+Type=Application

@@ -1,0 +1,58 @@
+ 23633 total
+  7300 ./src/aether.c
+  4098 ./src/config/parse_config.h
+  1993 ./src/dispatch/bind_define.h
+  1312 ./src/animation/client.h
+   975 ./src/ext-protocol/wlr_ext_workspace_v1.c
+   920 ./src/layout/scroll.h
+   754 ./mmsg/mmsg.c
+   611 ./src/switcher/switcher.c
+   600 ./src/ext-protocol/text-input.h
+   589 ./src/fetch/client.h
+   584 ./src/animation/layer.h
+   550 ./src/client/client.h
+   524 ./src/layout/arrange.h
+   433 ./src/layout/dwindle.h
+   309 ./src/ext-protocol/aether-ipc.h
+   261 ./src/animation/common.h
+   208 ./src/ext-protocol/ext-workspace.h
+   176 ./src/common/util.c
+   171 ./src/fetch/monitor.h
+   171 ./src/ext-protocol/tearing.h
+   162 ./src/ext-protocol/foreign-toplevel.h
+   150 ./src/ext-protocol/wlr_ext_workspace_v1.h
+   132 ./src/fetch/common.h
+   117 ./src/animation/tag.h
+   105 ./src/layout/horizontal.h
+   104 ./src/layout/vertical.h
+    79 ./src/data/static_keymap.h
+    78 ./src/dispatch/bind_declare.h
+    65 ./mmsg/arg.h
+    30 ./mmsg/dynarr.h
+    22 ./src/layout/layout.h
+    18 ./src/switcher/switcher.h
+    13 ./src/config/preset.h
+    13 ./src/common/util.h
+     4 ./src/ext-protocol/all.h
+     2 ./src/fetch/fetch.h
+
+
+
+
+
+
+
+
+الملف	ما يقابله من C
+mmsg/mmsg.cpp	mmsg/mmsg.c (754 سطر)
+src/animation/client.hpp	src/animation/client.h (1312 سطر)
+
+src/animation/layer.hpp	src/animation/layer.h (584 سطر)
+
+src/ext-protocol/text-input.hpp	src/ext-protocol/text-input.h (600 سطر)
+
+src/ext-protocol/wlr_ext_workspace_v1.cpp	wlr_ext_workspace_v1.c (975 سطر)
+
+src/layout/scroll.hpp	src/layout/scroll.h (920 سطر)
+
+src/switcher/switcher.cpp	src/switcher/switcher.c (611 سطر)
