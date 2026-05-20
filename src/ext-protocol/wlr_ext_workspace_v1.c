@@ -1,4 +1,4 @@
-#include "wlr_ext_workspace_v1.h"
+#include "ext-protocol/wlr_ext_workspace_v1.h"
 #include "ext-workspace-v1-protocol.h"
 #include <assert.h>
 #include <stdlib.h>

@@ -130,6 +130,7 @@ executable('aether',
     gdkpixbuf_dep,
   ],
   install : true,
+  include_directories : include_directories('include', 'src'),
   c_args : c_args,
   link_args : link_args,
 )
