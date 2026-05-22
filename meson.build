@@ -167,6 +167,10 @@ executable('mmsg',
 
 desktop_install_dir = join_paths(prefix, 'share/wayland-sessions')
 portal_install_dir = join_paths(prefix, 'share/xdg-desktop-portal')
-install_data('assets/aether.desktop', install_dir : desktop_install_dir)
-install_data('assets/aether-portals.conf', install_dir : portal_install_dir)
-install_data('assets/config.conf', install_dir : join_paths(sysconfdir, 'aether'))
+install_data('conf/aether.desktop', install_dir : desktop_install_dir)
+install_data('conf/aether-portals.conf', install_dir : portal_install_dir)
+install_data('conf/config.conf', install_dir : join_paths(sysconfdir, 'aether'))
+install_data('conf/autostart.sh', install_dir : join_paths(sysconfdir, 'aether'))
+install_data('conf/env.conf', install_dir : join_paths(sysconfdir, 'aether'))
+install_data('conf/exec.conf', install_dir : join_paths(sysconfdir, 'aether'))
+install_data('conf/keybindings.conf', install_dir : join_paths(sysconfdir, 'aether'))

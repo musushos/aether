@@ -14,8 +14,7 @@ enum {
 };
 
 Layout layouts[] = {
-	// 最少两个,不能删除少于两个
-	/* symbol     arrange function   name */
+
 	{"DW", dwindle, "dwindle", DWINDLE},
 	{"S", scroller, "scroller", SCROLLER},			 // 滚动布局
 	{"VS", vertical_scroller, "vertical_scroller",

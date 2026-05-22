@@ -1,6 +1,6 @@
 typedef struct {
 	const char *full_name;
-	const char *abbr; // 全部使用小写
+	const char *abbr;
 } LayoutMapping;
 
 static const LayoutMapping layout_mappings[] = {
