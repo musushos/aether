@@ -5,7 +5,10 @@ meson install -C build
 ```
 meson setup build --prefix=/usr --buildtype=release
 meson compile -C build
-
+```
+sudo cp conf/config.conf /etc/vaxp/aether/
+sudo setfacl -R -d -m o::rw,g::rw,u::rw /etc/vaxp/aether/
+sudo chmod 666 /etc/vaxp/aether/config.conf
 ```
 
 # التأكد من وجود مجلد subprojects

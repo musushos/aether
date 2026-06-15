@@ -138,6 +138,127 @@ void reapply_property(void) {
 	}
 }
 
+/* ── Live-update all visual effects on open windows & layers ── */
+
+/* Inline buffer iterator: re-apply blur on a client window buffer */
+static void reapply_effects_client_buf(struct wlr_scene_buffer *buffer,
+					int32_t sx, int32_t sy, void *user_data) {
+	Client *c = user_data;
+
+	struct wlr_scene_surface *scene_surface =
+		wlr_scene_surface_try_from_buffer(buffer);
+	if (!scene_surface)
+		return;
+
+	/* Don't blur subsurfaces */
+	if (wlr_subsurface_try_from_wlr_surface(scene_surface->surface) != NULL)
+		return;
+
+	if (config.blur && c && !c->noblur) {
+		wlr_scene_buffer_set_backdrop_blur(buffer, true);
+		wlr_scene_buffer_set_backdrop_blur_ignore_transparent(buffer, false);
+		wlr_scene_buffer_set_backdrop_blur_optimized(buffer,
+			config.blur_optimized ? true : false);
+	} else {
+		wlr_scene_buffer_set_backdrop_blur(buffer, false);
+	}
+}
+
+/* Inline buffer iterator: re-apply blur on a layer surface buffer */
+static void reapply_effects_layer_buf(struct wlr_scene_buffer *buffer,
+					int32_t sx, int32_t sy, void *user_data) {
+	struct wlr_scene_surface *scene_surface =
+		wlr_scene_surface_try_from_buffer(buffer);
+	if (!scene_surface)
+		return;
+
+	wlr_scene_buffer_set_backdrop_blur(buffer, true);
+	wlr_scene_buffer_set_backdrop_blur_ignore_transparent(buffer, true);
+	wlr_scene_buffer_set_backdrop_blur_optimized(buffer,
+		config.blur_optimized ? true : false);
+}
+
+void reapply_effects(void) {
+	Client *c = NULL;
+	Monitor *m = NULL;
+
+	/* ── Window clients ── */
+	wl_list_for_each(c, &clients, link) {
+		if (!c || c->iskilling || !client_surface(c)->mapped)
+			continue;
+
+		/* --- Shadow: update blur sigma, color, and corner radius --- */
+		if (c->shadow) {
+			wlr_scene_shadow_set_blur_sigma(c->shadow,
+				config.shadows_blur);
+			wlr_scene_shadow_set_color(c->shadow,
+				config.shadowscolor);
+			wlr_scene_shadow_set_corner_radius(c->shadow,
+				config.border_radius);
+		}
+
+		/* --- Border: update corner radius --- */
+		if (c->border) {
+			wlr_scene_rect_set_corner_radius(c->border,
+				config.border_radius,
+				config.border_radius_location_default);
+		}
+
+		/* --- Blur: reapply backdrop blur settings on all buffers --- */
+		wlr_scene_node_for_each_buffer(&c->scene_surface->node,
+			reapply_effects_client_buf, c);
+
+		/* --- Force geometry/effect recalculation --- */
+		resize(c, c->geom, 0);
+	}
+
+	/* ── Layer surfaces (panels, bars, notifications, etc.) ── */
+	wl_list_for_each(m, &mons, link) {
+		if (!m->wlr_output->enabled)
+			continue;
+
+		int32_t i;
+		LayerSurface *l = NULL;
+		for (i = 0; i < 4; i++) {
+			wl_list_for_each(l, &m->layers[i], link) {
+				if (!l || !l->mapped)
+					continue;
+
+				/* Update layer shadow properties */
+				if (l->shadow) {
+					wlr_scene_shadow_set_blur_sigma(l->shadow,
+						config.shadows_blur);
+					wlr_scene_shadow_set_color(l->shadow,
+						config.shadowscolor);
+					wlr_scene_shadow_set_corner_radius(l->shadow,
+						config.border_radius);
+				}
+
+				/* Reapply blur on layer buffers */
+				if (config.blur && config.blur_layer && !l->noblur) {
+					wlr_scene_node_for_each_buffer(
+						&l->scene->node,
+						reapply_effects_layer_buf, l);
+				}
+
+				/* Mark the layer as needing a redraw */
+				l->need_output_flush = true;
+				if (l->mon)
+					wlr_output_schedule_frame(l->mon->wlr_output);
+			}
+		}
+	}
+
+	/* ── Global blur parameters (blur pass count, radius, etc.) ── */
+	reset_blur_params();
+
+	/* ── Schedule a frame on all monitors so changes appear immediately ── */
+	wl_list_for_each(m, &mons, link) {
+		if (m->wlr_output->enabled)
+			wlr_output_schedule_frame(m->wlr_output);
+	}
+}
+
 void reapply_keyboard(void) {
 	InputDevice *id;
 	wl_list_for_each(id, &inputdevices, link) {
@@ -274,7 +395,6 @@ void reset_option(void) {
 	init_baked_points();
 	handlecursoractivity();
 	reset_keyboard_layout();
-	reset_blur_params();
 	set_env();
 	run_exec();
 
@@ -284,6 +404,10 @@ void reset_option(void) {
 	reapply_keyboard();
 	reapply_pointer();
 	reapply_master();
+
+	/* Live-update all visual effects (shadow, blur, corner radius)
+	 * on all currently open windows and layer surfaces. */
+	reapply_effects();
 
 	reapply_tagrule();
 	reapply_monitor_rules();
