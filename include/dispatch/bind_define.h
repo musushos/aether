@@ -96,7 +96,7 @@ int32_t destroy_all_virtual_output(const Arg *arg) {
 }
 
 int32_t defaultgaps(const Arg *arg) {
-	setgaps(config.gappoh, config.gap_outer_top, config.gap_outer_bottom, config.gappih, config.gappiv);
+	setgaps(config.gap_outer_left, config.gap_outer_right, config.gap_outer_top, config.gap_outer_bottom, config.gappih, config.gappiv);
 	return 0;
 }
 
@@ -279,7 +279,7 @@ int32_t incnmaster(const Arg *arg) {
 int32_t incgaps(const Arg *arg) {
 	if (!selmon)
 		return 0;
-	setgaps(selmon->gappoh + arg->i, selmon->gap_outer_top + arg->i, selmon->gap_outer_bottom + arg->i,
+	setgaps(selmon->gap_outer_left + arg->i, selmon->gap_outer_right + arg->i, selmon->gap_outer_top + arg->i, selmon->gap_outer_bottom + arg->i,
 			selmon->gappih + arg->i, selmon->gappiv + arg->i);
 	return 0;
 }
@@ -287,7 +287,7 @@ int32_t incgaps(const Arg *arg) {
 int32_t incigaps(const Arg *arg) {
 	if (!selmon)
 		return 0;
-	setgaps(selmon->gappoh, selmon->gap_outer_top, selmon->gap_outer_bottom, selmon->gappih + arg->i,
+	setgaps(selmon->gap_outer_left, selmon->gap_outer_right, selmon->gap_outer_top, selmon->gap_outer_bottom, selmon->gappih + arg->i,
 			selmon->gappiv + arg->i);
 	return 0;
 }
@@ -295,7 +295,7 @@ int32_t incigaps(const Arg *arg) {
 int32_t incogaps(const Arg *arg) {
 	if (!selmon)
 		return 0;
-	setgaps(selmon->gappoh + arg->i, selmon->gap_outer_top + arg->i, selmon->gap_outer_bottom + arg->i, selmon->gappih,
+	setgaps(selmon->gap_outer_left + arg->i, selmon->gap_outer_right + arg->i, selmon->gap_outer_top + arg->i, selmon->gap_outer_bottom + arg->i, selmon->gappih,
 			selmon->gappiv);
 	return 0;
 }
@@ -303,7 +303,7 @@ int32_t incogaps(const Arg *arg) {
 int32_t incihgaps(const Arg *arg) {
 	if (!selmon)
 		return 0;
-	setgaps(selmon->gappoh, selmon->gap_outer_top, selmon->gap_outer_bottom, selmon->gappih + arg->i,
+	setgaps(selmon->gap_outer_left, selmon->gap_outer_right, selmon->gap_outer_top, selmon->gap_outer_bottom, selmon->gappih + arg->i,
 			selmon->gappiv);
 	return 0;
 }
@@ -311,7 +311,7 @@ int32_t incihgaps(const Arg *arg) {
 int32_t incivgaps(const Arg *arg) {
 	if (!selmon)
 		return 0;
-	setgaps(selmon->gappoh, selmon->gap_outer_top, selmon->gap_outer_bottom, selmon->gappih,
+	setgaps(selmon->gap_outer_left, selmon->gap_outer_right, selmon->gap_outer_top, selmon->gap_outer_bottom, selmon->gappih,
 			selmon->gappiv + arg->i);
 	return 0;
 }
@@ -319,7 +319,7 @@ int32_t incivgaps(const Arg *arg) {
 int32_t incohgaps(const Arg *arg) {
 	if (!selmon)
 		return 0;
-	setgaps(selmon->gappoh + arg->i, selmon->gap_outer_top, selmon->gap_outer_bottom, selmon->gappih,
+	setgaps(selmon->gap_outer_left + arg->i, selmon->gap_outer_right + arg->i, selmon->gap_outer_top, selmon->gap_outer_bottom, selmon->gappih,
 			selmon->gappiv);
 	return 0;
 }
@@ -327,7 +327,7 @@ int32_t incohgaps(const Arg *arg) {
 int32_t increase_outer_top_gap(const Arg *arg) {
 	if (!selmon)
 		return 0;
-	setgaps(selmon->gappoh, selmon->gap_outer_top + arg->i, selmon->gap_outer_bottom, selmon->gappih,
+	setgaps(selmon->gap_outer_left, selmon->gap_outer_right, selmon->gap_outer_top + arg->i, selmon->gap_outer_bottom, selmon->gappih,
 			selmon->gappiv);
 	return 0;
 }
@@ -335,7 +335,7 @@ int32_t increase_outer_top_gap(const Arg *arg) {
 int32_t increase_outer_bottom_gap(const Arg *arg) {
 	if (!selmon)
 		return 0;
-	setgaps(selmon->gappoh, selmon->gap_outer_top, selmon->gap_outer_bottom + arg->i, selmon->gappih,
+	setgaps(selmon->gap_outer_left, selmon->gap_outer_right, selmon->gap_outer_top, selmon->gap_outer_bottom + arg->i, selmon->gappih,
 			selmon->gappiv);
 	return 0;
 }
@@ -898,7 +898,7 @@ int32_t smartmovewin(const Arg *arg) {
 		}
 
 		nx = tar == -99999 ? nx : tar;
-		nx = MAX(nx, c->mon->w.x + c->mon->gappoh);
+		nx = MAX(nx, c->mon->w.x + c->mon->gap_outer_left);
 		break;
 	case RIGHT:
 		tar = 99999;
@@ -917,7 +917,7 @@ int32_t smartmovewin(const Arg *arg) {
 		}
 		nx = tar == 99999 ? nx : tar;
 		nx = MIN(nx, c->mon->w.x + c->mon->w.width - c->geom.width -
-						 c->mon->gappoh);
+						 c->mon->gap_outer_right);
 		break;
 	}
 
@@ -988,8 +988,8 @@ int32_t smartresizewin(const Arg *arg) {
 		}
 
 		nw = tar == 99999 ? nw : tar;
-		if (c->geom.x + nw + config.gappoh > selmon->w.x + selmon->w.width)
-			nw = selmon->w.x + selmon->w.width - c->geom.x - config.gappoh;
+		if (c->geom.x + nw + config.gap_outer_right > selmon->w.x + selmon->w.width)
+			nw = selmon->w.x + selmon->w.width - c->geom.x - config.gap_outer_right;
 		break;
 	}
 

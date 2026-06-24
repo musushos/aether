@@ -82,9 +82,10 @@ void createmon(struct wl_listener *listener, void *data) {
 	for (i = 0; i < LENGTH(m->layers); i++)
 		wl_list_init(&m->layers[i]);
 
-	m->gappih = config.gappih;
-	m->gappiv = config.gappiv;
-	m->gappoh = config.gappoh;
+	m->gappih           = config.gappih;
+	m->gappiv           = config.gappiv;
+	m->gap_outer_left   = config.gap_outer_left;
+	m->gap_outer_right  = config.gap_outer_right;
 	m->gap_outer_top    = config.gap_outer_top;
 	m->gap_outer_bottom = config.gap_outer_bottom;
 	m->isoverview = 0;

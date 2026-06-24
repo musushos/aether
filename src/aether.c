@@ -542,11 +542,12 @@ struct Monitor {
 	uint32_t resizing_count_current;
 
 	struct wl_list aether_ipc_outputs;
-	int32_t gappih;         /* horizontal gap between windows */
-	int32_t gappiv;         /* vertical gap between windows */
-	int32_t gappoh;         /* horizontal outer gaps */
-	int32_t gap_outer_top;    /* outer vertical gap — top edge */
-	int32_t gap_outer_bottom; /* outer vertical gap — bottom edge */
+	int32_t gappih;            /* horizontal gap between windows */
+	int32_t gappiv;            /* vertical gap between windows */
+	int32_t gap_outer_left;    /* outer horizontal gap — left edge */
+	int32_t gap_outer_right;   /* outer horizontal gap — right edge */
+	int32_t gap_outer_top;     /* outer vertical gap — top edge */
+	int32_t gap_outer_bottom;  /* outer vertical gap — bottom edge */
 	Pertag *pertag;
 	uint32_t ovbk_current_tagset;
 	uint32_t ovbk_prev_tagset;
@@ -713,7 +714,7 @@ static void setfakefullscreen(Client *c, int32_t fakefullscreen);
 static void setfullscreen(Client *c, int32_t fullscreen);
 static void setmaximizescreen(Client *c, int32_t maximizescreen);
 static void reset_maximizescreen_size(Client *c);
-static void setgaps(int32_t oh, int32_t outer_top, int32_t outer_bottom, int32_t ih, int32_t iv);
+static void setgaps(int32_t outer_left, int32_t outer_right, int32_t outer_top, int32_t outer_bottom, int32_t ih, int32_t iv);
 
 static void setmon(Client *c, Monitor *m, uint32_t newtags, bool focus);
 static void setpsel(struct wl_listener *listener, void *data);

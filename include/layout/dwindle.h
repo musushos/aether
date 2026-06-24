@@ -248,14 +248,15 @@ static void dwindle_resize_client(Monitor *m, Client *c) {
 	int32_t n = m->visible_tiling_clients;
 	int32_t gap_ih = enablegaps ? m->gappih : 0;
 	int32_t gap_iv = enablegaps ? m->gappiv : 0;
-	int32_t gap_oh = enablegaps ? m->gappoh : 0;
+	int32_t gap_outer_left  = enablegaps ? m->gap_outer_left  : 0;
+	int32_t gap_outer_right = enablegaps ? m->gap_outer_right : 0;
 	int32_t gap_outer_top    = enablegaps ? m->gap_outer_top    : 0;
 	int32_t gap_outer_bottom = enablegaps ? m->gap_outer_bottom : 0;
 	if (config.smartgaps && n == 1)
-		gap_ih = gap_iv = gap_oh = gap_outer_top = gap_outer_bottom = 0;
+		gap_ih = gap_iv = gap_outer_left = gap_outer_right = gap_outer_top = gap_outer_bottom = 0;
 
-	dwindle_assign(m->pertag->dwindle_root[tag], m->w.x + gap_oh,
-				   m->w.y + gap_outer_top, m->w.width - 2 * gap_oh,
+	dwindle_assign(m->pertag->dwindle_root[tag], m->w.x + gap_outer_left,
+				   m->w.y + gap_outer_top, m->w.width - gap_outer_left - gap_outer_right,
 				   m->w.height - gap_outer_top - gap_outer_bottom, gap_ih, gap_iv);
 }
 
@@ -298,14 +299,15 @@ static void dwindle_resize_client_step(Monitor *m, Client *c, int32_t dx,
 	int32_t n_clients = m->visible_tiling_clients;
 	int32_t gap_ih = enablegaps ? m->gappih : 0;
 	int32_t gap_iv = enablegaps ? m->gappiv : 0;
-	int32_t gap_oh = enablegaps ? m->gappoh : 0;
+	int32_t gap_outer_left  = enablegaps ? m->gap_outer_left  : 0;
+	int32_t gap_outer_right = enablegaps ? m->gap_outer_right : 0;
 	int32_t gap_outer_top    = enablegaps ? m->gap_outer_top    : 0;
 	int32_t gap_outer_bottom = enablegaps ? m->gap_outer_bottom : 0;
 	if (config.smartgaps && n_clients == 1)
-		gap_ih = gap_iv = gap_oh = gap_outer_top = gap_outer_bottom = 0;
+		gap_ih = gap_iv = gap_outer_left = gap_outer_right = gap_outer_top = gap_outer_bottom = 0;
 
-	dwindle_assign(m->pertag->dwindle_root[tag], m->w.x + gap_oh,
-				   m->w.y + gap_outer_top, m->w.width - 2 * gap_oh,
+	dwindle_assign(m->pertag->dwindle_root[tag], m->w.x + gap_outer_left,
+				   m->w.y + gap_outer_top, m->w.width - gap_outer_left - gap_outer_right,
 				   m->w.height - gap_outer_top - gap_outer_bottom, gap_ih, gap_iv);
 }
 
@@ -424,13 +426,14 @@ void dwindle(Monitor *m) {
 
 	int32_t gap_ih = enablegaps ? m->gappih : 0;
 	int32_t gap_iv = enablegaps ? m->gappiv : 0;
-	int32_t gap_oh = enablegaps ? m->gappoh : 0;
+	int32_t gap_outer_left  = enablegaps ? m->gap_outer_left  : 0;
+	int32_t gap_outer_right = enablegaps ? m->gap_outer_right : 0;
 	int32_t gap_outer_top    = enablegaps ? m->gap_outer_top    : 0;
 	int32_t gap_outer_bottom = enablegaps ? m->gap_outer_bottom : 0;
 	if (config.smartgaps && n == 1)
-		gap_ih = gap_iv = gap_oh = gap_outer_top = gap_outer_bottom = 0;
+		gap_ih = gap_iv = gap_outer_left = gap_outer_right = gap_outer_top = gap_outer_bottom = 0;
 
-	dwindle_assign(*root, m->w.x + gap_oh, m->w.y + gap_outer_top,
-				   m->w.width - 2 * gap_oh, m->w.height - gap_outer_top - gap_outer_bottom, gap_ih,
+	dwindle_assign(*root, m->w.x + gap_outer_left, m->w.y + gap_outer_top,
+				   m->w.width - gap_outer_left - gap_outer_right, m->w.height - gap_outer_top - gap_outer_bottom, gap_ih,
 				   gap_iv);
 }

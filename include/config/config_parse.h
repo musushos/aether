@@ -486,8 +486,14 @@ bool parse_option(Config *config, char *key, char *value) {
 		config->gappih = atoi(value);
 	} else if (strcmp(key, "gappiv") == 0) {
 		config->gappiv = atoi(value);
+	} else if (strcmp(key, "gap_outer_left") == 0) {
+		config->gap_outer_left = atoi(value);
+	} else if (strcmp(key, "gap_outer_right") == 0) {
+		config->gap_outer_right = atoi(value);
 	} else if (strcmp(key, "gappoh") == 0) {
-		config->gappoh = atoi(value);
+		/* backward compatibility: set both left and right outer horizontal gaps */
+		config->gap_outer_left  = atoi(value);
+		config->gap_outer_right = atoi(value);
 	} else if (strcmp(key, "gap_outer_top") == 0) {
 		config->gap_outer_top = atoi(value);
 	} else if (strcmp(key, "gap_outer_bottom") == 0) {

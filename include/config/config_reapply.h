@@ -303,9 +303,10 @@ void reapply_master(void) {
 			}
 			m->pertag->nmasters[i] = config.default_nmaster;
 			m->pertag->mfacts[i] = config.default_mfact;
-			m->gappih = config.gappih;
-			m->gappiv = config.gappiv;
-			m->gappoh = config.gappoh;
+			m->gappih           = config.gappih;
+			m->gappiv           = config.gappiv;
+			m->gap_outer_left   = config.gap_outer_left;
+			m->gap_outer_right  = config.gap_outer_right;
 			m->gap_outer_top    = config.gap_outer_top;
 			m->gap_outer_bottom = config.gap_outer_bottom;
 		}

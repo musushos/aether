@@ -34,12 +34,13 @@ static EdgeSnapZone detect_edge_snap_zone(Monitor *m, double cx, double cy) {
 static struct wlr_box get_edge_snap_geometry(EdgeSnapZone zone, Monitor *m) {
 	struct wlr_box box = m->w; // Use usable area (excluding panels)
 
-	/* Apply outer gaps so snapped windows respect gap_outer_top/bottom and gappoh */
-	int32_t got = enablegaps ? m->gap_outer_top    : 0;
-	int32_t gob = enablegaps ? m->gap_outer_bottom : 0;
-	int32_t goh = enablegaps ? m->gappoh           : 0;
-	box.x      += goh;
-	box.width  -= goh * 2;
+	/* Apply outer gaps so snapped windows respect gap_outer_top/bottom and gap_outer_left/right */
+	int32_t got  = enablegaps ? m->gap_outer_top    : 0;
+	int32_t gob  = enablegaps ? m->gap_outer_bottom : 0;
+	int32_t gol  = enablegaps ? m->gap_outer_left   : 0;
+	int32_t gor  = enablegaps ? m->gap_outer_right  : 0;
+	box.x      += gol;
+	box.width  -= gol + gor;
 	box.y      += got;
 	box.height -= got + gob;
 

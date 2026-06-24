@@ -176,7 +176,7 @@ setfloating(Client *c, int32_t floating) {
 		// restore to the memeroy geom
 		if (c->float_geom.width > 0 && c->float_geom.height > 0) {
 			if (c->mon &&
-				c->float_geom.width >= c->mon->w.width - config.gappoh) {
+			c->float_geom.width >= c->mon->w.width - config.gap_outer_left - config.gap_outer_right) {
 				c->float_geom.width = c->mon->w.width * 0.9;
 				window_size_outofrange = true;
 			}
@@ -251,9 +251,9 @@ setfloating(Client *c, int32_t floating) {
 }
 
 void reset_maximizescreen_size(Client *c) {
-	c->geom.x = c->mon->w.x + config.gappoh;
+	c->geom.x     = c->mon->w.x + config.gap_outer_left;
 	c->geom.y      = c->mon->w.y + config.gap_outer_top;
-	c->geom.width  = c->mon->w.width - 2 * config.gappoh;
+	c->geom.width  = c->mon->w.width - config.gap_outer_left - config.gap_outer_right;
 	c->geom.height = c->mon->w.height - config.gap_outer_top - config.gap_outer_bottom;
 	resize(c, c->geom, 0);
 }
@@ -293,9 +293,9 @@ void setmaximizescreen(Client *c, int32_t maximizescreen) {
 
 		exit_scroller_stack(c);
 
-		maximizescreen_box.x = c->mon->w.x + config.gappoh;
+		maximizescreen_box.x      = c->mon->w.x + config.gap_outer_left;
 		maximizescreen_box.y      = c->mon->w.y + config.gap_outer_top;
-		maximizescreen_box.width  = c->mon->w.width - 2 * config.gappoh;
+		maximizescreen_box.width  = c->mon->w.width - config.gap_outer_left - config.gap_outer_right;
 		maximizescreen_box.height = c->mon->w.height - config.gap_outer_top - config.gap_outer_bottom;
 		wlr_scene_node_raise_to_top(&c->scene->node);
 		if (!is_scroller_layout(c->mon) || c->isfloating)
@@ -393,12 +393,13 @@ void setfullscreen(Client *c, int32_t fullscreen) // 用自定义全屏代理自
 	arrange(c->mon, false, false);
 }
 
-void setgaps(int32_t oh, int32_t outer_top, int32_t outer_bottom, int32_t ih, int32_t iv) {
-	selmon->gappoh         = MAX(oh,          0);
+void setgaps(int32_t outer_left, int32_t outer_right, int32_t outer_top, int32_t outer_bottom, int32_t ih, int32_t iv) {
+	selmon->gap_outer_left   = MAX(outer_left,   0);
+	selmon->gap_outer_right  = MAX(outer_right,  0);
 	selmon->gap_outer_top    = MAX(outer_top,    0);
 	selmon->gap_outer_bottom = MAX(outer_bottom, 0);
-	selmon->gappih         = MAX(ih,          0);
-	selmon->gappiv         = MAX(iv,          0);
+	selmon->gappih           = MAX(ih,           0);
+	selmon->gappiv           = MAX(iv,           0);
 	arrange(selmon, false, false);
 }
 

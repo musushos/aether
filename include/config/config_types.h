@@ -327,7 +327,8 @@ typedef struct {
 	int32_t smartgaps;
 	uint32_t gappih;
 	uint32_t gappiv;
-	uint32_t gappoh;
+	uint32_t gap_outer_left;   /* outer horizontal gap — left edge */
+	uint32_t gap_outer_right;  /* outer horizontal gap — right edge */
 	uint32_t gap_outer_top;    /* outer vertical gap — top edge */
 	uint32_t gap_outer_bottom; /* outer vertical gap — bottom edge */
 	uint32_t borderpx;

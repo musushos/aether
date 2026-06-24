@@ -6,7 +6,8 @@ void overview(Monitor *m) {
 	Client *c = NULL;
 	n = 0;
 	int32_t target_gappo =
-		enablegaps ? m->isoverview ? config.overviewgappo : config.gappoh : 0;
+		enablegaps ? m->isoverview ? config.overviewgappo
+		           : (int32_t)((config.gap_outer_left + config.gap_outer_right) / 2) : 0;
 	int32_t target_gappi =
 		enablegaps ? m->isoverview ? config.overviewgappi : config.gappih : 0;
 	float single_width_ratio = m->isoverview ? 0.7 : 0.9;
