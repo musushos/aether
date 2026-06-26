@@ -500,13 +500,13 @@ static const struct wl_registry_listener registry_listener = {
 
 static void usage(void) {
 	fprintf(stderr,
-			"mmsg - aetherWM IPC\n"
+			"AetherMessenger - AetherWM IPC\n"
 			"\n"
 			"SYNOPSIS:\n"
-			"\tmmsg [-OTLq]\n"
-			"\tmmsg [-o <output>] -s [-t <tags>] [-l <layout>] [-c <tags>] [-d "
+			"\tAetherMessenger [-OTLq]\n"
+			"\tAetherMessenger [-o <output>] -s [-t <tags>] [-l <layout>] [-c <tags>] [-d "
 			"<cmd>,<arg1>,<arg2>,<arg3>,<arg4>,<arg5>]\n"
-			"\tmmsg [-o <output>] (-g | -w) [-OotlcvmfxekbA]\n"
+			"\tAetherMessenger [-o <output>] (-g | -w) [-OotlcvmfxekbA]\n"
 			"\n"
 			"OPERATION MODES:\n"
 			"\t-g           Get values (tags, layout, focused client)\n"

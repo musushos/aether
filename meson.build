@@ -111,7 +111,7 @@ executable('aether',
   link_args : link_args,
 )
 
-# build mmsg
+# build AetherMessenger
 aether_ipc_protocol = 'protocols/aether-ipc-unstable-x.xml'
 
 wayland_scanner_client_header = generator(
@@ -126,8 +126,8 @@ wayland_scanner_private_code = generator(
   arguments: ['private-code', '@INPUT@', '@OUTPUT@']
 )
 
-executable('mmsg',
-  'mmsg/mmsg.c',
+executable('AetherMessenger',
+  'AetherMessenger/AetherMessenger.c',
   wayland_scanner_private_code.process(aether_ipc_protocol),
   wayland_scanner_client_header.process(aether_ipc_protocol),
   dependencies: [

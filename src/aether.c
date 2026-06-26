@@ -1,6 +1,3 @@
-/*
- * See LICENSE file for copyright and license details.
- */
 #include "wlr-layer-shell-unstable-v1-protocol.h"
 #include "wlr/util/box.h"
 #include "wlr/util/edges.h"

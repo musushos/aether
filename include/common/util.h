@@ -1,4 +1,3 @@
-/* See LICENSE.dwm file for copyright and license details. */
 #include <wayland-util.h>
 
 void die(const char *fmt, ...);
