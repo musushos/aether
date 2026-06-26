@@ -166,7 +166,7 @@ setfloating(Client *c, int32_t floating) {
 		client_pending_maximized_state(c, 0);
 		exit_scroller_stack(c);
 
-		// 重新计算居中的坐标
+		// Recalculate the center coordinates
 		if (!client_is_x11(c) && !c->iscustompos)
 			target_box =
 				setclient_coordinate_center(c, c->mon, target_box, 0, 0);
@@ -202,7 +202,7 @@ setfloating(Client *c, int32_t floating) {
 		c->is_scratchpad_show = 0;
 		c->is_in_scratchpad = 0;
 		c->isnamedscratchpad = 0;
-		// 让当前tag中的全屏窗口退出全屏参与平铺
+		// Let the full-screen window in the current tag exit full-screen and participate in tiling
 		wl_list_for_each(fc, &clients,
 						 link) if (fc && fc != c && VISIBLEON(fc, c->mon) &&
 								   c->tags & fc->tags && ISFULLSCREEN(fc) &&
@@ -268,7 +268,7 @@ void exit_scroller_stack(Client *c) {
 		struct ScrollerStackNode *n = find_scroller_node(st, c);
 		if (n) {
 			scroller_node_remove(st, n);
-			return; /* 节点已移除，客户端指针已在函数内清空 */
+			return; /* The node has been removed and the client pointer has been cleared within the function */
 		}
 	}
 }
@@ -336,7 +336,7 @@ void setfakefullscreen(Client *c, int32_t fakefullscreen) {
 	client_set_fullscreen(c, fakefullscreen);
 }
 
-void setfullscreen(Client *c, int32_t fullscreen) // 用自定义全屏代理自带全屏
+void setfullscreen(Client *c, int32_t fullscreen) // Use custom full-screen proxy to bring full screen
 {
 
 	if (!c || !c->mon || !client_surface(c)->mapped || c->iskilling)
@@ -363,7 +363,7 @@ void setfullscreen(Client *c, int32_t fullscreen) // 用自定义全屏代理自
 		c->isfakefullscreen = 0;
 
 		c->bw = 0;
-		wlr_scene_node_raise_to_top(&c->scene->node); // 将视图提升到顶层
+		wlr_scene_node_raise_to_top(&c->scene->node); // Promote the view to the top
 		if (!is_scroller_layout(c->mon) || c->isfloating)
 			resize(c, c->mon->m, 1);
 	} else {
@@ -434,13 +434,13 @@ void reset_keyboard_layout(void) {
 	struct xkb_keymap *new_keymap = xkb_keymap_new_from_names(
 		context, &config.xkb_rules, XKB_KEYMAP_COMPILE_NO_FLAGS);
 	if (!new_keymap) {
-		// 理论上这里不应该失败，因为前面已经验证过了
+		// Theoretically it should not fail here because it has been verified before
 		wlr_log(WLR_ERROR,
 				"Unexpected failure to create keymap after validation");
 		goto cleanup_context;
 	}
 
-	// 验证新keymap是否有布局
+	// Verify whether the new keymap has a layout
 	const int32_t new_num_layouts = xkb_keymap_num_layouts(new_keymap);
 	if (new_num_layouts < 1) {
 		wlr_log(WLR_ERROR, "New keymap has no layouts");
@@ -448,7 +448,7 @@ void reset_keyboard_layout(void) {
 		goto cleanup_context;
 	}
 
-	// 确保当前布局索引在新keymap中有效
+	// Ensure that the current layout index is valid in the new keymap
 	if (current >= new_num_layouts) {
 		wlr_log(WLR_INFO,
 				"Current layout index %u out of range for new keymap, "
@@ -483,7 +483,7 @@ void reset_keyboard_layout(void) {
 		wlr_keyboard_notify_modifiers(tkb, depressed, latched, locked, 0);
 		tkb->modifiers.group = 0;
 
-		// 7. 更新 seat
+		// 7. Update seat
 		wlr_seat_set_keyboard(seat, tkb);
 		wlr_seat_keyboard_notify_modifiers(seat, &tkb->modifiers);
 	}
@@ -597,7 +597,7 @@ void create_output(struct wlr_backend *backend, void *data) {
 #endif
 }
 
-// 修改信号处理函数，接收掩码参数
+// Modify the signal processing function to receive mask parameters
 void handle_print_status(struct wl_listener *listener, void *data) {
 
 	Monitor *m = NULL;
@@ -710,7 +710,7 @@ void setup(void) {
 	wlr_alpha_modifier_v1_create(dpy);
 	wlr_ext_data_control_manager_v1_create(dpy, 1);
 
-	// 在 setup 函数中
+	// in setup function
 	wl_signal_init(&aether_print_status);
 	wl_signal_add(&aether_print_status, &print_status_listener);
 
@@ -823,7 +823,7 @@ void setup(void) {
 	wl_signal_add(&cursor->events.axis, &cursor_axis);
 	wl_signal_add(&cursor->events.frame, &cursor_frame);
 
-	// 这两句代码会造成obs窗口里的鼠标光标消失,不知道注释有什么影响
+	// These two lines of code will cause the mouse cursor in the obs window to disappear. I don’t know what the impact of the comments will be.
 	cursor_shape_mgr = wlr_cursor_shape_manager_v1_create(dpy, 1);
 	wl_signal_add(&cursor_shape_mgr->events.request_set_shape,
 				  &request_set_cursor_shape);
@@ -898,14 +898,14 @@ void setup(void) {
 	wl_global_create(dpy, &zaether_ipc_manager_v2_interface, 2, NULL,
 					 aether_ipc_manager_bind);
 
-	// 创建顶层管理句柄
+	//Create top-level management handle
 	foreign_toplevel_manager = wlr_foreign_toplevel_manager_v1_create(dpy);
 	struct wlr_xdg_foreign_registry *foreign_registry =
 		wlr_xdg_foreign_registry_create(dpy);
 	wlr_xdg_foreign_v1_create(dpy, foreign_registry);
 	wlr_xdg_foreign_v2_create(dpy, foreign_registry);
 
-	// ext-workspace协议
+	// ext-workspace protocol
 	workspaces_init();
 #ifdef XWAYLAND
 	/*

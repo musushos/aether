@@ -14,27 +14,27 @@ uint32_t parse_mod(const char *mod_str) {
 	char *saveptr = NULL;
 	bool match_success = false;
 
-	// 复制并转换为小写
+	// Copy and convert to lowercase
 	strncpy(input_copy, mod_str, sizeof(input_copy) - 1);
 	input_copy[sizeof(input_copy) - 1] = '\0';
 	for (char *p = input_copy; *p; p++) {
 		*p = tolower(*p);
 	}
 
-	// 分割处理每个部分
+	// Split and process each part
 	token = strtok_r(input_copy, "+", &saveptr);
 	while (token != NULL) {
-		// 去除前后空白
+		//Remove leading and trailing whitespace
 		trim_whitespace(token);
 
-		// 如果 token 变成空字符串则跳过
+		// Skip if token becomes empty string
 		if (*token == '\0') {
 			token = strtok_r(NULL, "+", &saveptr);
 			continue;
 		}
 
 		if (strncmp(token, "code:", 5) == 0) {
-			// 处理 code: 形式
+			// Process code: form
 			char *endptr;
 			long keycode = strtol(token + 5, &endptr, 10);
 			if (endptr != token + 5 && (*endptr == '\0' || *endptr == ' ')) {
@@ -107,7 +107,7 @@ uint32_t parse_mod(const char *mod_str) {
 	return mod;
 }
 
-// 定义辅助函数：在 keymap 中查找 keysym 对应的多个 keycode
+//Define auxiliary function: find multiple keycodes corresponding to keysym in keymap
 static int32_t find_keycodes_for_keysym(struct xkb_keymap *keymap,
 										xkb_keysym_t sym,
 										MultiKeycode *multi_kc) {
@@ -122,7 +122,7 @@ static int32_t find_keycodes_for_keysym(struct xkb_keymap *keymap,
 
 	for (xkb_keycode_t keycode = min_keycode;
 		 keycode <= max_keycode && found_count < 3; keycode++) {
-		// 使用布局0和层级0
+		// Use layout 0 and level 0
 		const xkb_keysym_t *syms;
 		int32_t num_syms =
 			xkb_keymap_key_get_syms_by_level(keymap, keycode, 0, 0, &syms);
@@ -161,7 +161,7 @@ void cleanup_config_keymap(void) {
 }
 
 void create_config_keymap(void) {
-	// 初始化 xkb 上下文和 keymap
+	//Initialize xkb context and keymap
 
 	if (config.ctx == NULL) {
 		config.ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
@@ -174,21 +174,21 @@ void create_config_keymap(void) {
 }
 
 KeySymCode parse_key(const char *key_str, bool isbindsym) {
-	KeySymCode kc = {0}; // 初始化为0
+	KeySymCode kc = {0}; // initialized to 0
 
 	if (config.keymap == NULL || config.ctx == NULL) {
-		// 处理错误
+		// Handle errors
 		kc.type = KEY_TYPE_SYM;
 		kc.keysym = XKB_KEY_NoSymbol;
 		return kc;
 	}
 
-	// 处理 code: 前缀的情况
+	// Handle the case of code: prefix
 	if (strncmp(key_str, "code:", 5) == 0) {
 		char *endptr;
 		xkb_keycode_t keycode = (xkb_keycode_t)strtol(key_str + 5, &endptr, 10);
 		kc.type = KEY_TYPE_CODE;
-		kc.keycode.keycode1 = keycode; // 只设置第一个
+		kc.keycode.keycode1 = keycode; //Only set the first one
 		kc.keycode.keycode2 = 0;
 		kc.keycode.keycode3 = 0;
 		return kc;
@@ -205,42 +205,42 @@ KeySymCode parse_key(const char *key_str, bool isbindsym) {
 	}
 
 	if (sym != XKB_KEY_NoSymbol) {
-		// 尝试找到对应的多个 keycode
+		//Try to find multiple corresponding keycodes
 		int32_t found_count =
 			find_keycodes_for_keysym(config.keymap, sym, &kc.keycode);
 		if (found_count > 0) {
 			kc.type = KEY_TYPE_CODE;
-			kc.keysym = sym; // 仍然保存 keysym 供参考
+			kc.keysym = sym; // Still saving keysym for reference
 		} else {
 			kc.type = KEY_TYPE_SYM;
 			kc.keysym = sym;
-			// keycode 字段保持为0
+			// keycode field remains 0
 		}
 	} else {
-		// 无法解析的键名
+		//Unresolvable key name
 		kc.type = KEY_TYPE_SYM;
 		kc.keysym = XKB_KEY_NoSymbol;
 		fprintf(
 			stderr,
 			"\033[1m\033[31m[ERROR]:\033[33m Unknown key: \033[1m\033[31m%s\n",
 			key_str);
-		// keycode 字段保持为0
+		// keycode field remains 0
 	}
 
 	return kc;
 }
 
 uint32_t parse_button(const char *str) {
-	// 将输入字符串转换为小写
+	//Convert the input string to lowercase
 	char lowerStr[20];
 	int32_t i = 0;
 	while (str[i] && i < 19) {
 		lowerStr[i] = tolower(str[i]);
 		i++;
 	}
-	lowerStr[i] = '\0'; // 确保字符串正确终止
+	lowerStr[i] = '\0'; // Make sure the string is terminated correctly
 
-	// 根据转换后的小写字符串返回对应的按钮编号
+	//Return the corresponding button number based on the converted lowercase string
 	if (strcmp(lowerStr, "btn_left") == 0) {
 		return BTN_LEFT;
 	} else if (strcmp(lowerStr, "btn_right") == 0) {
@@ -267,16 +267,16 @@ uint32_t parse_button(const char *str) {
 }
 
 int32_t parse_mouse_action(const char *str) {
-	// 将输入字符串转换为小写
+	//Convert the input string to lowercase
 	char lowerStr[20];
 	int32_t i = 0;
 	while (str[i] && i < 19) {
 		lowerStr[i] = tolower(str[i]);
 		i++;
 	}
-	lowerStr[i] = '\0'; // 确保字符串正确终止
+	lowerStr[i] = '\0'; // Make sure the string is terminated correctly
 
-	// 根据转换后的小写字符串返回对应的按钮编号
+	//Return the corresponding button number based on the converted lowercase string
 	if (strcmp(lowerStr, "curmove") == 0) {
 		return CurMove;
 	} else if (strcmp(lowerStr, "curresize") == 0) {
@@ -382,7 +382,7 @@ FuncType parse_func_name(char *func_name, Arg *arg, char *arg_value,
 
 		(*arg).v = strdup(arg_value);
 
-		// 收集需要拼接的参数
+		// Collect parameters that need to be spliced
 		const char *non_empty_params[4] = {NULL};
 		int32_t param_index = 0;
 
@@ -395,16 +395,16 @@ FuncType parse_func_name(char *func_name, Arg *arg, char *arg_value,
 		if (arg_value5 && arg_value5[0] != '\0')
 			non_empty_params[param_index++] = arg_value5;
 
-		// 处理拼接
+		// handle splicing
 		if (param_index == 0) {
 			(*arg).v2 = strdup("");
 		} else {
-			// 计算总长度
+			// Calculate the total length
 			size_t len = 0;
 			for (int32_t i = 0; i < param_index; i++) {
 				len += strlen(non_empty_params[i]);
 			}
-			len += (param_index - 1) + 1; // 逗号数 + null终止符
+			len += (param_index - 1) + 1; // Number of commas + null terminator
 
 			char *temp = malloc(len);
 			if (temp) {
@@ -481,7 +481,7 @@ FuncType parse_func_name(char *func_name, Arg *arg, char *arg_value,
 		(*arg).v = combine_args_until_empty(values, 5);
 	} else if (strcmp(func_name, "spawn_on_empty") == 0) {
 		func = spawn_on_empty;
-		(*arg).v = strdup(arg_value); // 注意：之后需要释放这个内存
+		(*arg).v = strdup(arg_value); // Note: This memory needs to be released later
 		(*arg).ui = 1 << (atoi(arg_value2) - 1);
 	} else if (strcmp(func_name, "quit") == 0) {
 		func = quit;

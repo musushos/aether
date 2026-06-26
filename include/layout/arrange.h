@@ -271,7 +271,7 @@ void resize_tile_scroller(Client *grabc, bool isdrag, int32_t offsetx,
 			fmaxf(0.1f, fminf(1.0f, new_scroller_proportion));
 		new_stack_proportion = fmaxf(0.1f, fminf(0.9f, new_stack_proportion));
 
-		// 保持总和为 1，避免后续 arrange 归一化吞掉位移
+		//Keep the sum at 1 to avoid subsequent arrange normalization from swallowing up the displacement
 		if (isdrag) {
 			float current_other_sum = 1.0f - curnode->stack_proportion;
 			float new_other_sum = 1.0f - new_stack_proportion;
@@ -285,7 +285,7 @@ void resize_tile_scroller(Client *grabc, bool isdrag, int32_t offsetx,
 				}
 			}
 		} else {
-			// 键盘步进
+			// keyboard step
 			if (grabc->old_stack_proportion != 1.0f) {
 				for (struct ScrollerStackNode *tc = headnode; tc;
 					 tc = tc->next_in_stack) {
@@ -302,7 +302,7 @@ void resize_tile_scroller(Client *grabc, bool isdrag, int32_t offsetx,
 		curnode->stack_proportion = new_stack_proportion;
 		headnode->scroller_proportion = new_scroller_proportion;
 
-		/* 同步回全局字段 */
+		/* Synchronize back to global fields */
 		sync_scroller_state_to_clients(m, tag);
 
 		if (!isdrag) {
@@ -435,10 +435,10 @@ void pre_caculate_before_arrange(Monitor *m, bool want_animation,
 			if (ISTILED(c)) {
 				m->visible_tiling_clients++;
 
-				/* 更新可见滚动客户端计数 */
+				/* Update visible scroll client count */
 				if (st) {
 					struct ScrollerStackNode *n = find_scroller_node(st, c);
-					if (n && !n->prev_in_stack) /* 是堆叠头部 */
+					if (n && !n->prev_in_stack) /* is the stack header */
 						m->visible_scroll_tiling_clients++;
 				} else if (ISSCROLLTILED(c)) {
 					m->visible_scroll_tiling_clients++;

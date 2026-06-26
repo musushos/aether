@@ -66,7 +66,7 @@ uint32_t get_tags_first_tag_num(uint32_t source_tags) {
 	}
 }
 
-// 获取tags中最前面的tag的tagmask
+// Get the tagmask of the frontmost tag in tags
 uint32_t get_tags_first_tag(uint32_t source_tags) {
 	uint32_t i, tag;
 	tag = 0;

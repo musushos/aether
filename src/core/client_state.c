@@ -243,7 +243,7 @@ bool pointer_is_trackpad(struct wlr_pointer *pointer) {
 	return false;
 }
 
-void // 鼠标滚轮事件
+void //Mouse wheel event
 axisnotify(struct wl_listener *listener, void *data) {
 	/* This event is forwarded by the cursor when a pointer emits an axis event,
 	 * for example when you move the scroll wheel. */
@@ -279,15 +279,15 @@ axisnotify(struct wl_listener *listener, void *data) {
 		if (config.axis_bindings_count < 1)
 			break;
 		a = &config.axis_bindings[ji];
-		if (CLEANMASK(mods) == CLEANMASK(a->mod) && // 按键一致
-			adir == a->dir && a->func) { // 滚轮方向判断一致且处理函数存在
+		if (CLEANMASK(mods) == CLEANMASK(a->mod) && //The keys are consistent
+			adir == a->dir && a->func) { // The wheel direction judgment is consistent and the processing function exists
 			if (event->time_msec - axis_apply_time >
 					config.axis_bind_apply_timeout ||
 				axis_apply_dir * event->delta < 0) {
 				a->func(&a->arg);
 				axis_apply_time = event->time_msec;
 				axis_apply_dir = event->delta > 0 ? 1 : -1;
-				return; // 如果成功匹配就不把这个滚轮事件传送给客户端了
+				return; // If the match is successful, the wheel event will not be sent to the client.
 			} else {
 				axis_apply_dir = event->delta > 0 ? 1 : -1;
 				axis_apply_time = event->time_msec;
@@ -306,7 +306,7 @@ axisnotify(struct wl_listener *listener, void *data) {
 							   : config.axis_scroll_factor;
 
 	wlr_seat_pointer_notify_axis(
-		seat, // 滚轮事件发送给客户端也就是窗口
+		seat, //The scroll wheel event is sent to the client, which is the window
 		event->time_msec, event->orientation,
 		event->delta * target_scroll_factor,
 		roundf(event->delta_discrete * target_scroll_factor), event->source,
@@ -515,7 +515,7 @@ bool check_trackpad_disabled(struct wlr_pointer *pointer) {
 	return pointer_is_trackpad(pointer);
 }
 
-void // 鼠标按键事件
+void //Mouse button event
 buttonpress(struct wl_listener *listener, void *data) {
 	struct wlr_pointer_button_event *event = data;
 	struct wlr_keyboard *hard_keyboard, *keyboard;
@@ -554,7 +554,7 @@ buttonpress(struct wl_listener *listener, void *data) {
 				motionnotify(0, NULL, 0, 0, 0, 0);
 			}
 
-			// 聚焦按需要交互焦点的layer，但注意不能抢占独占焦点的layer
+			// Focus on the layer that requires interactive focus, but be careful not to preempt the layer that has exclusive focus.
 			if (l && !exclusive_focus &&
 				l->layer_surface->current.keyboard_interactive ==
 					ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_ON_DEMAND) {
@@ -562,8 +562,8 @@ buttonpress(struct wl_listener *listener, void *data) {
 			}
 		}
 
-		// 当鼠标焦点在layer上的时候，不检测虚拟键盘的mod状态，
-		// 避免layer虚拟键盘锁死mod按键状态
+		// When the mouse focus is on the layer, the mod status of the virtual keyboard is not detected.
+		// Prevent the layer virtual keyboard from locking the mod key state
 		hard_keyboard = &kb_group->wlr_group->keyboard;
 		hard_mods =
 			hard_keyboard ? wlr_keyboard_get_modifiers(hard_keyboard) : 0;

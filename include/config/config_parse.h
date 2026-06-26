@@ -248,15 +248,15 @@ bool parse_option(Config *config, char *key, char *value) {
 				sizeof(config->xkb_rules_options) - 1);
 		config->xkb_rules_options[sizeof(config->xkb_rules_options) - 1] = '\0';
 	} else if (strcmp(key, "scroller_proportion_preset") == 0) {
-		// 1. 统计 value 中有多少个逗号，确定需要解析的浮点数个数
-		int32_t count = 0; // 初始化为 0
+		// 1. Count how many commas there are in value and determine the number of floating point numbers that need to be parsed.
+		int32_t count = 0; // initialized to 0
 		for (const char *p = value; *p; p++) {
 			if (*p == ',')
 				count++;
 		}
-		int32_t float_count = count + 1; // 浮点数的数量是逗号数量加 1
+		int32_t float_count = count + 1; // The number of floating point numbers is the number of commas plus 1
 
-		// 2. 动态分配内存，存储浮点数
+		// 2. Dynamically allocate memory and store floating point numbers
 		config->scroller_proportion_preset =
 			(float *)malloc(float_count * sizeof(float));
 		if (!config->scroller_proportion_preset) {
@@ -265,9 +265,9 @@ bool parse_option(Config *config, char *key, char *value) {
 			return false;
 		}
 
-		// 3. 解析 value 中的浮点数
+		// 3. Parse the floating point number in value
 		char *value_copy =
-			strdup(value); // 复制 value，因为 strtok 会修改原字符串
+			strdup(value); //Copy value, because strtok will modify the original string
 		char *token = strtok(value_copy, ",");
 		int32_t i = 0;
 		float value_set;
@@ -294,32 +294,32 @@ bool parse_option(Config *config, char *key, char *value) {
 			i++;
 		}
 
-		// 4. 检查解析的浮点数数量是否匹配
+		// 4. Check whether the number of parsed floating point numbers matches
 		if (i != float_count) {
 			fprintf(stderr,
 					"\033[1m\033[31m[ERROR]:\033[33m Invalid "
 					"scroller_proportion_preset format: %s\n",
 					value);
 			free(value_copy);
-			free(config->scroller_proportion_preset);  // 释放已分配的内存
-			config->scroller_proportion_preset = NULL; // 防止野指针
+			free(config->scroller_proportion_preset);  // Release allocated memory
+			config->scroller_proportion_preset = NULL; // Prevent wild pointers
 			config->scroller_proportion_preset_count = 0;
 			return false;
 		}
 		config->scroller_proportion_preset_count = float_count;
 
-		// 5. 释放临时复制的字符串
+		// 5. Release the temporarily copied string
 		free(value_copy);
 	} else if (strcmp(key, "circle_layout") == 0) {
-		// 1. 统计 value 中有多少个逗号，确定需要解析的字符串个数
-		int32_t count = 0; // 初始化为 0
+		// 1. Count how many commas there are in value to determine the number of strings that need to be parsed
+		int32_t count = 0; // initialized to 0
 		for (const char *p = value; *p; p++) {
 			if (*p == ',')
 				count++;
 		}
-		int32_t string_count = count + 1; // 字符串的数量是逗号数量加 1
+		int32_t string_count = count + 1; // The number of strings is the number of commas plus 1
 
-		// 2. 动态分配内存，存储字符串指针
+		// 2. Dynamically allocate memory and store string pointers
 		config->circle_layout = (char **)malloc(string_count * sizeof(char *));
 		memset(config->circle_layout, 0, string_count * sizeof(char *));
 		if (!config->circle_layout) {
@@ -328,14 +328,14 @@ bool parse_option(Config *config, char *key, char *value) {
 			return false;
 		}
 
-		// 3. 解析 value 中的字符串
+		// 3. Parse the string in value
 		char *value_copy =
-			strdup(value); // 复制 value，因为 strtok 会修改原字符串
+			strdup(value); //Copy value, because strtok will modify the original string
 		char *token = strtok(value_copy, ",");
 		int32_t i = 0;
 		char *cleaned_token;
 		while (token != NULL && i < string_count) {
-			// 为每个字符串分配内存并复制内容
+			// Allocate memory for each string and copy the contents
 			cleaned_token = sanitize_string(token);
 			config->circle_layout[i] = strdup(cleaned_token);
 			if (!config->circle_layout[i]) {
@@ -344,13 +344,13 @@ bool parse_option(Config *config, char *key, char *value) {
 						"failed for "
 						"string: %s\n",
 						token);
-				// 释放之前分配的内存
+				// Release previously allocated memory
 				for (int32_t j = 0; j < i; j++) {
 					free(config->circle_layout[j]);
 				}
 				free(config->circle_layout);
 				free(value_copy);
-				config->circle_layout = NULL; // 防止野指针
+				config->circle_layout = NULL; // Prevent wild pointers
 				config->circle_layout_count = 0;
 				return false;
 			}
@@ -358,25 +358,25 @@ bool parse_option(Config *config, char *key, char *value) {
 			i++;
 		}
 
-		// 4. 检查解析的字符串数量是否匹配
+		// 4. Check whether the number of parsed strings matches
 		if (i != string_count) {
 			fprintf(stderr,
 					"\033[1m\033[31m[ERROR]:\033[33m Invalid circle_layout "
 					"format: %s\n",
 					value);
-			// 释放之前分配的内存
+			// Release previously allocated memory
 			for (int32_t j = 0; j < i; j++) {
 				free(config->circle_layout[j]);
 			}
 			free(config->circle_layout);
 			free(value_copy);
-			config->circle_layout = NULL; // 防止野指针
+			config->circle_layout = NULL; // Prevent wild pointers
 			config->circle_layout_count = 0;
 			return false;
 		}
 		config->circle_layout_count = string_count;
 
-		// 5. 释放临时复制的字符串
+		// 5. Release the temporarily copied string
 		free(value_copy);
 	} else if (strcmp(key, "new_is_master") == 0) {
 		config->new_is_master = atoi(value);
@@ -696,7 +696,7 @@ bool parse_option(Config *config, char *key, char *value) {
 			&config->monitor_rules[config->monitor_rules_count];
 		memset(rule, 0, sizeof(ConfigMonitorRule));
 
-		// 设置默认值
+		//Set default value
 		rule->name = NULL;
 		rule->make = NULL;
 		rule->model = NULL;
@@ -784,7 +784,7 @@ bool parse_option(Config *config, char *key, char *value) {
 		ConfigTagRule *rule = &config->tag_rules[config->tag_rules_count];
 		memset(rule, 0, sizeof(ConfigTagRule));
 
-		// 设置默认值
+		//Set default value
 		rule->id = 0;
 		rule->layout_name = NULL;
 		rule->monitor_name = NULL;
@@ -859,7 +859,7 @@ bool parse_option(Config *config, char *key, char *value) {
 		ConfigLayerRule *rule = &config->layer_rules[config->layer_rules_count];
 		memset(rule, 0, sizeof(ConfigLayerRule));
 
-		// 设置默认值
+		//Set default value
 		rule->layer_name = NULL;
 		rule->animation_type_open = NULL;
 		rule->animation_type_close = NULL;
@@ -903,7 +903,7 @@ bool parse_option(Config *config, char *key, char *value) {
 			token = strtok(NULL, ",");
 		}
 
-		// 如果没有指定布局名称，则使用默认值
+		// If no layout name is specified, the default value is used
 		if (rule->layer_name == NULL) {
 			rule->layer_name = strdup("default");
 		}

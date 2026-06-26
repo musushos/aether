@@ -18,7 +18,7 @@ enum {
 Layout layouts[] = {
 	{"󰋰", floating_layout, "floating", FLOATING},   // وضع عائم
 	{"DW", dwindle, "dwindle", DWINDLE},
-	{"S", scroller, "scroller", SCROLLER},			 // 滚动布局
+	{"S", scroller, "scroller", SCROLLER},			 // scroll layout
 	{"VS", vertical_scroller, "vertical_scroller",
-	 VERTICAL_SCROLLER},							   // 垂直滚动布局
+	 VERTICAL_SCROLLER},							   //Vertical scroll layout
 };

@@ -444,11 +444,11 @@ void set_value_default() {
 }
 
 void set_default_key_bindings(Config *config) {
-	// 计算默认按键绑定的数量
+	// Count the number of default key bindings
 	size_t default_key_bindings_count =
 		sizeof(default_key_bindings) / sizeof(KeyBinding);
 
-	// 重新分配内存以容纳新的默认按键绑定
+	//Reallocate memory to accommodate the new default keybindings
 	config->key_bindings =
 		realloc(config->key_bindings,
 				(config->key_bindings_count + default_key_bindings_count) *
@@ -457,7 +457,7 @@ void set_default_key_bindings(Config *config) {
 		return;
 	}
 
-	// 将默认按键绑定复制到配置的按键绑定数组中
+	//Copy the default key bindings to the configured key bindings array
 	for (size_t i = 0; i < default_key_bindings_count; i++) {
 		config->key_bindings[config->key_bindings_count + i] =
 			default_key_bindings[i];
@@ -466,7 +466,7 @@ void set_default_key_bindings(Config *config) {
 		config->key_bindings[config->key_bindings_count + i].islockapply = true;
 	}
 
-	// 更新按键绑定的总数
+	// Update the total number of key bindings
 	config->key_bindings_count += default_key_bindings_count;
 }
 
@@ -478,14 +478,14 @@ bool parse_config(void) {
 
 	memset(&config, 0, sizeof(config));
 
-	// 重新将xkb_rules指针指向静态数组
+	// Re-point the xkb_rules pointer to the static array
 	config.xkb_rules.layout = config.xkb_rules_layout;
 	config.xkb_rules.variant = config.xkb_rules_variant;
 	config.xkb_rules.options = config.xkb_rules_options;
 	config.xkb_rules.rules = config.xkb_rules_rules;
 	config.xkb_rules.model = config.xkb_rules_model;
 
-	// 初始化动态数组的指针为NULL，避免野指针
+	// Initialize the pointer of the dynamic array to NULL to avoid wild pointers
 	config.window_rules = NULL;
 	config.window_rules_count = 0;
 	config.monitor_rules = NULL;

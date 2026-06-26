@@ -181,7 +181,7 @@ void layer_flush_blur_background(LayerSurface *l) {
 	if (!config.blur)
 		return;
 
-	// 如果背景层发生变化,标记优化的模糊背景缓存需要更新
+	// If the background layer changes, the marker optimized blur background cache needs to be updated
 	if (l->layer_surface->current.layer ==
 		ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND) {
 		if (l->mon) {
@@ -201,11 +201,11 @@ void maplayersurfacenotify(struct wl_listener *listener, void *data) {
 	if (!l->mon)
 		return;
 	strncpy(l->mon->last_surface_ws_name, layer_surface->namespace,
-			sizeof(l->mon->last_surface_ws_name) - 1); // 最多拷贝255个字符
+			sizeof(l->mon->last_surface_ws_name) - 1); //Copy up to 255 characters
 	l->mon->last_surface_ws_name[sizeof(l->mon->last_surface_ws_name) - 1] =
-		'\0'; // 确保字符串以null结尾
+		'\0'; // Make sure the string is null terminated
 
-	// 初始化几何位置
+	//Initialize geometric position
 	get_layer_target_geometry(l, &l->geom);
 
 	l->noanim = 0;
@@ -214,7 +214,7 @@ void maplayersurfacenotify(struct wl_listener *listener, void *data) {
 	l->shadow = NULL;
 	l->need_output_flush = true;
 
-	// 应用layer规则
+	//Apply layer rules
 	for (ji = 0; ji < config.layer_rules_count; ji++) {
 		if (config.layer_rules_count < 1)
 			break;
@@ -230,7 +230,7 @@ void maplayersurfacenotify(struct wl_listener *listener, void *data) {
 		}
 	}
 
-	// 初始化阴影
+	//Initialize shadow
 	if (layer_surface->current.exclusive_zone == 0 &&
 		layer_surface->current.layer != ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM &&
 		layer_surface->current.layer != ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND) {
@@ -241,13 +241,13 @@ void maplayersurfacenotify(struct wl_listener *listener, void *data) {
 		wlr_scene_node_set_enabled(&l->shadow->node, true);
 	}
 
-	// 初始化动画
+	//Initialize animation
 	if (config.animations && config.layer_animations && !l->noanim) {
 		l->animation.duration = config.animation_duration_open;
 		l->animation.action = OPEN;
 		layer_set_pending_state(l);
 	}
-	// 刷新布局，让窗口能感应到exclude_zone变化以及设置独占表面
+	// Refresh the layout so that the window can sense changes in exclude_zone and set the exclusive surface
 	arrangelayers(l->mon);
 	reset_exclusive_layers_focus(l->mon);
 }
@@ -269,7 +269,7 @@ void commitlayersurfacenotify(struct wl_listener *listener, void *data) {
 		l->layer_surface->current = l->layer_surface->pending;
 		arrangelayers(l->mon);
 		l->layer_surface->current = old_state;
-		// 按需交互layer只在map之前设置焦点
+		//On-demand interactive layer only sets focus before map
 		if (!exclusive_focus &&
 			l->layer_surface->current.keyboard_interactive ==
 				ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_ON_DEMAND) {
@@ -278,8 +278,8 @@ void commitlayersurfacenotify(struct wl_listener *listener, void *data) {
 		return;
 	}
 
-	// 检查surface是否有buffer
-	// 空buffer，只是隐藏，不改变mapped状态
+	// Check if the surface has a buffer
+	// Empty buffer, just hidden, does not change the mapped state
 	if (l->mapped && !layer_surface->surface->buffer) {
 		wlr_scene_node_set_enabled(&l->scene->node, false);
 		return;

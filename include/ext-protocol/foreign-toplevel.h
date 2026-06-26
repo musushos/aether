@@ -107,7 +107,7 @@ void add_foreign_toplevel(Client *c) {
 
 	c->foreign_toplevel =
 		wlr_foreign_toplevel_handle_v1_create(foreign_toplevel_manager);
-	// 监听来自外部对于窗口的事件请求
+	//Listen to event requests from the outside for the window
 	if (c->foreign_toplevel) {
 		LISTEN(&(c->foreign_toplevel->events.request_activate),
 			   &c->foreign_activate_request, handle_foreign_activate_request);
@@ -122,19 +122,19 @@ void add_foreign_toplevel(Client *c) {
 			   &c->foreign_close_request, handle_foreign_close_request);
 		LISTEN(&(c->foreign_toplevel->events.destroy), &c->foreign_destroy,
 			   handle_foreign_destroy);
-		// 设置外部顶层句柄的id为应用的id
+		//Set the id of the external top-level handle to the application id
 		const char *appid;
 		appid = client_get_appid(c);
 		if (appid)
 			wlr_foreign_toplevel_handle_v1_set_app_id(c->foreign_toplevel,
 													  appid);
-		// 设置外部顶层句柄的title为应用的title
+		//Set the title of the external top-level handle to the title of the application
 		const char *title;
 		title = client_get_title(c);
 		if (title)
 			wlr_foreign_toplevel_handle_v1_set_title(c->foreign_toplevel,
 													 title);
-		// 设置外部顶层句柄的显示监视器为当前监视器
+		//Set the display monitor of the external top-level handle as the current monitor
 		wlr_foreign_toplevel_handle_v1_output_enter(c->foreign_toplevel,
 													c->mon->wlr_output);
 	}

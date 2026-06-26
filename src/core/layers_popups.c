@@ -15,7 +15,7 @@ bool monitor_matches_rule(Monitor *m, const ConfigMonitorRule *rule) {
 	return true;
 }
 
-/* 将规则中的显示参数应用到 wlr_output_state 中，返回是否设置了自定义模式 */
+/* Apply the display parameters in the rule to wlr_output_state and return whether the custom mode is set */
 bool apply_rule_to_state(Monitor *m, const ConfigMonitorRule *rule,
 						 struct wlr_output_state *state, int vrr, int custom) {
 	bool mode_set = false;
@@ -117,7 +117,7 @@ void createmon(struct wl_listener *listener, void *data) {
 			if (apply_rule_to_state(m, r, &state, vrr, custom)) {
 				custom_monitor_mode = true;
 			}
-			break; // 只应用第一个匹配规则
+			break; //Only apply the first matching rule
 		}
 	}
 
@@ -231,30 +231,30 @@ void destroyinputdevice(struct wl_listener *listener, void *data) {
 	InputDevice *input_dev =
 		wl_container_of(listener, input_dev, destroy_listener);
 
-	// 清理设备特定数据
+	// Clean up device specific data
 	if (input_dev->device_data) {
-		// 根据设备类型进行特定清理
+		// Perform specific cleanup based on device type
 		switch (input_dev->wlr_device->type) {
 		case WLR_INPUT_DEVICE_SWITCH: {
 			Switch *sw = (Switch *)input_dev->device_data;
-			// 移除 toggle 监听器
+			// Remove toggle listener
 			wl_list_remove(&sw->toggle.link);
-			// 释放 Switch 内存
+			// Release Switch memory
 			free(sw);
 			break;
 		}
-		// 可以添加其他设备类型的清理代码
+		// Cleaning code for other device types can be added
 		default:
 			break;
 		}
 		input_dev->device_data = NULL;
 	}
 
-	// 从设备列表中移除
+	//Remove from device list
 	wl_list_remove(&input_dev->link);
-	// 移除 destroy 监听器
+	//Remove destroy listener
 	wl_list_remove(&input_dev->destroy_listener.link);
-	// 释放内存
+	// release memory
 	free(input_dev);
 }
 
@@ -340,10 +340,10 @@ void createpointer(struct wlr_pointer *pointer) {
 }
 
 void switch_toggle(struct wl_listener *listener, void *data) {
-	// 获取包含监听器的结构体
+	// Get the structure containing the listener
 	Switch *sw = wl_container_of(listener, sw, toggle);
 
-	// 处理切换事件
+	// Handle switching events
 	struct wlr_switch_toggle_event *event = data;
 	SwitchBinding *s;
 	int32_t ji;
@@ -369,25 +369,25 @@ void createswitch(struct wlr_switch *switch_device) {
 		InputDevice *input_dev = calloc(1, sizeof(InputDevice));
 		input_dev->wlr_device = &switch_device->base;
 		input_dev->libinput_device = device;
-		input_dev->device_data = NULL; // 初始化为 NULL
+		input_dev->device_data = NULL; //Initialize to NULL
 
 		input_dev->destroy_listener.notify = destroyinputdevice;
 		wl_signal_add(&switch_device->base.events.destroy,
 					  &input_dev->destroy_listener);
 
-		// 创建 Switch 特定数据
+		//Create Switch specific data
 		Switch *sw = calloc(1, sizeof(Switch));
 		sw->wlr_switch = switch_device;
 		sw->toggle.notify = switch_toggle;
 		sw->input_dev = input_dev;
 
-		// 将 Switch 指针保存到 input_device 中
+		//Save the Switch pointer into input_device
 		input_dev->device_data = sw;
 
-		// 添加 toggle 监听器
+		//Add toggle listener
 		wl_signal_add(&switch_device->events.toggle, &sw->toggle);
 
-		// 添加到全局列表
+		//Add to global list
 		wl_list_insert(&inputdevices, &input_dev->link);
 	}
 }
@@ -607,7 +607,7 @@ void focusclient(Client *c, int32_t lift) {
 
 	/* Raise client in stacking order if requested */
 	if (c && lift)
-		wlr_scene_node_raise_to_top(&c->scene->node); // 将视图提升到顶层
+		wlr_scene_node_raise_to_top(&c->scene->node); // Promote the view to the top
 
 	/* In floating layout mode, always raise focused floating window */
 	if (c && c->mon && c->isfloating &&

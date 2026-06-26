@@ -35,7 +35,7 @@ int32_t parse_double_array(const char *input, double *output,
 	char *token;
 	int32_t count = 0;
 
-	// 先清空整个数组
+	// Clear the entire array first
 	memset(output, 0, max_count * sizeof(double));
 
 	token = strtok(dup, ",");
@@ -51,8 +51,8 @@ int32_t parse_double_array(const char *input, double *output,
 			free(dup);
 			return -1;
 		}
-		output[count] = val; // 赋值到当前count位置
-		count++;			 // 然后才自增
+		output[count] = val; //Assign value to current count position
+		count++;			 // then increment
 		token = strtok(NULL, ",");
 	}
 
@@ -60,12 +60,12 @@ int32_t parse_double_array(const char *input, double *output,
 	return count;
 }
 
-// 清理字符串中的不可见字符（包括 \r, \n, 空格等）
+// Clean invisible characters in the string (including \r, \n, spaces, etc.)
 char *sanitize_string(char *str) {
-	// 去除首部不可见字符
+	//Remove the first invisible characters
 	while (*str != '\0' && !isprint((unsigned char)*str))
 		str++;
-	// 去除尾部不可见字符
+	//Remove trailing invisible characters
 	char *end = str + strlen(str) - 1;
 	while (end > str && !isprint((unsigned char)*end))
 		end--;
@@ -73,17 +73,17 @@ char *sanitize_string(char *str) {
 	return str;
 }
 
-// 解析bind组合字符串
+// Parse the bind combination string
 void parse_bind_flags(const char *str, KeyBinding *kb) {
 
-	// 检查是否以"bind"开头
+	// Check if it starts with "bind"
 	if (strncmp(str, "bind", 4) != 0) {
 		return;
 	}
 
-	const char *suffix = str + 4; // 跳过"bind"
+	const char *suffix = str + 4; // skip "bind"
 
-	// 遍历后缀字符
+	// Traverse suffix characters
 	for (int32_t i = 0; suffix[i] != '\0'; i++) {
 		switch (suffix[i]) {
 		case 's':
@@ -108,7 +108,7 @@ void parse_bind_flags(const char *str, KeyBinding *kb) {
 }
 
 int32_t parse_circle_direction(const char *str) {
-	// 将输入字符串转换为小写
+	//Convert the input string to lowercase
 	char lowerStr[10];
 	int32_t i = 0;
 	while (str[i] && i < 9) {
@@ -117,7 +117,7 @@ int32_t parse_circle_direction(const char *str) {
 	}
 	lowerStr[i] = '\0';
 
-	// 根据转换后的小写字符串返回对应的枚举值
+	//Return the corresponding enumeration value based on the converted lowercase string
 	if (strcmp(lowerStr, "next") == 0) {
 		return NEXT;
 	} else {
@@ -126,7 +126,7 @@ int32_t parse_circle_direction(const char *str) {
 }
 
 int32_t parse_direction(const char *str) {
-	// 将输入字符串转换为小写
+	//Convert the input string to lowercase
 	char lowerStr[10];
 	int32_t i = 0;
 	while (str[i] && i < 9) {
@@ -135,7 +135,7 @@ int32_t parse_direction(const char *str) {
 	}
 	lowerStr[i] = '\0';
 
-	// 根据转换后的小写字符串返回对应的枚举值
+	//Return the corresponding enumeration value based on the converted lowercase string
 	if (strcmp(lowerStr, "up") == 0) {
 		return UP;
 	} else if (strcmp(lowerStr, "down") == 0) {
@@ -150,7 +150,7 @@ int32_t parse_direction(const char *str) {
 }
 
 int32_t parse_fold_state(const char *str) {
-	// 将输入字符串转换为小写
+	//Convert the input string to lowercase
 	char lowerStr[10];
 	int32_t i = 0;
 	while (str[i] && i < 9) {
@@ -159,7 +159,7 @@ int32_t parse_fold_state(const char *str) {
 	}
 	lowerStr[i] = '\0';
 
-	// 根据转换后的小写字符串返回对应的枚举值
+	//Return the corresponding enumeration value based on the converted lowercase string
 	if (strcmp(lowerStr, "fold") == 0) {
 		return FOLD;
 	} else if (strcmp(lowerStr, "unfold") == 0) {
@@ -177,7 +177,7 @@ int64_t parse_color(const char *hex_str) {
 	return hex_num;
 }
 
-// 辅助函数：检查字符串是否以指定的前缀开头（忽略大小写）
+// Helper function: Check if the string starts with the specified prefix (ignoring case)
 static bool starts_with_ignore_case(const char *str, const char *prefix) {
 	while (*prefix) {
 		if (tolower(*str) != tolower(*prefix)) {

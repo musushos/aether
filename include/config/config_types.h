@@ -11,13 +11,13 @@
 #define SYSCONFDIR "/etc"
 #endif
 
-// 整数版本 - 截断小数部分
+// Integer version - truncate decimal part
 #define CLAMP_INT(x, min, max)                                                 \
 	((int32_t)(x) < (int32_t)(min)                                             \
 		 ? (int32_t)(min)                                                      \
 		 : ((int32_t)(x) > (int32_t)(max) ? (int32_t)(max) : (int32_t)(x)))
 
-// 浮点数版本 - 保留小数部分
+// Floating point version - keep decimal part
 #define CLAMP_FLOAT(x, min, max)                                               \
 	((x) < (min) ? (min) : ((x) > (max) ? (max) : (x)))
 
@@ -118,7 +118,7 @@ typedef struct {
 	int32_t custom;				 // enable custom mode
 } ConfigMonitorRule;
 
-// 修改后的宏定义
+//Modified macro definition
 #define CHVT(n)                                                                \
 	{                                                                          \
 		WLR_MODIFIER_CTRL | WLR_MODIFIER_ALT,                                  \
@@ -128,7 +128,7 @@ typedef struct {
 		}                                                                      \
 	}
 
-// 默认按键绑定数组
+//Default key binding array
 KeyBinding default_key_bindings[] = {CHVT(1), CHVT(2),	CHVT(3),  CHVT(4),
 									 CHVT(5), CHVT(6),	CHVT(7),  CHVT(8),
 									 CHVT(9), CHVT(10), CHVT(11), CHVT(12)};
@@ -176,7 +176,7 @@ typedef struct {
 } ConfigTagRule;
 
 typedef struct {
-	char *layer_name; // 布局名称
+	char *layer_name; // layout name
 	char *animation_type_open;
 	char *animation_type_close;
 	int32_t noblur;
@@ -362,17 +362,17 @@ typedef struct {
 	int32_t log_level;
 	uint32_t capslock;
 
-	ConfigTagRule *tag_rules; // 动态数组
-	int32_t tag_rules_count;  // 数量
+	ConfigTagRule *tag_rules; // dynamic array
+	int32_t tag_rules_count;  // quantity
 
-	ConfigLayerRule *layer_rules; // 动态数组
-	int32_t layer_rules_count;	  // 数量
+	ConfigLayerRule *layer_rules; // dynamic array
+	int32_t layer_rules_count;	  // quantity
 
 	ConfigWinRule *window_rules;
 	int32_t window_rules_count;
 
-	ConfigMonitorRule *monitor_rules; // 动态数组
-	int32_t monitor_rules_count;	  // 条数
+	ConfigMonitorRule *monitor_rules; // dynamic array
+	int32_t monitor_rules_count;	  //Number of items
 
 	KeyBinding *key_bindings;
 	int32_t key_bindings_count;

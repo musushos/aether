@@ -30,7 +30,7 @@ void clear_fullscreen_and_maximized_state(Monitor *m) {
 	}
 }
 
-/*清除全屏标志,还原全屏时清0的border*/
+/*Clear the full screen flag and restore the border that was cleared to 0 in full screen*/
 void clear_fullscreen_flag(Client *c) {
 
 	if ((c->mon->pertag->ltidxs[get_tags_first_tag_num(c->tags)]->id ==
@@ -89,7 +89,7 @@ void show_scratchpad(Client *c) {
 		c->geom.height =
 			c->iscustomsize ? c->float_geom.height
 							: c->mon->w.height * config.scratchpad_height_ratio;
-		// 重新计算居中的坐标
+		// Recalculate the center coordinates
 		c->float_geom = c->geom = c->animainit_geom = c->animation.current =
 			setclient_coordinate_center(c, c->mon, c->geom, 0, 0);
 		c->iscustomsize = 1;
@@ -97,8 +97,8 @@ void show_scratchpad(Client *c) {
 	}
 
 	c->oldtags = c->mon->tagset[c->mon->seltags];
-	wl_list_remove(&c->link);					  // 从原来位置移除
-	wl_list_insert(clients.prev->next, &c->link); // 插入开头
+	wl_list_remove(&c->link);					  //Remove from original position
+	wl_list_insert(clients.prev->next, &c->link); //Insert the beginning
 	show_hide_client(c);
 	setborder_color(c);
 }
@@ -126,10 +126,10 @@ void swallow(Client *c, Client *w) {
 	c->scroller_proportion = w->scroller_proportion;
 	c->isglobal = w->isglobal;
 
-	/* 调整 w 的邻居指针，让它们指向 c */
+	/* Adjust w’s neighbor pointers so that they point to c */
 	c->stack_proportion = w->stack_proportion;
 
-	/* 全局链表替换 */
+	/* Global linked list replacement */
 	wl_list_insert(&w->link, &c->link);
 	wl_list_insert(&w->flink, &c->flink);
 
@@ -155,7 +155,7 @@ void swallow(Client *c, Client *w) {
 	client_pending_maximized_state(c, w->ismaximizescreen);
 	client_pending_minimized_state(c, w->isminimized);
 
-	/* ---------- 跨 tag 同步：dwindle 与 scroller ---------- */
+	/* ---------- Cross-tag synchronization: dwindle and scroller ---------- */
 	Monitor *m;
 	wl_list_for_each(m, &mons, link) {
 		for (uint32_t t = 0; t < LENGTH(tags) + 1; t++) {
@@ -171,19 +171,19 @@ void swallow(Client *c, Client *w) {
 			if (!st)
 				continue;
 
-			/* 先移除 c 在任意 tag 中的旧节点 */
+			/* First remove the old nodes of c in any tag */
 			struct ScrollerStackNode *cn = find_scroller_node(st, c);
 			if (cn)
 				scroller_node_remove(st, cn);
 
-			/* 将 w 的节点（如果存在）转给 c */
+			/* Transfer the node of w (if it exists) to c */
 			struct ScrollerStackNode *wn = find_scroller_node(st, w);
 			if (wn)
 				wn->client = c;
 		}
 	}
 
-	/* 同步当前活动 tag 的全局客户端字段 */
+	/* Synchronize the global client fields of the current active tag */
 	if (c->mon) {
 		uint32_t curtag = c->mon->pertag->curtag;
 		sync_scroller_state_to_clients(c->mon, curtag);
@@ -194,14 +194,14 @@ bool switch_scratchpad_client_state(Client *c) {
 
 	if (config.scratchpad_cross_monitor && selmon && c->mon != selmon &&
 		c->is_in_scratchpad) {
-		// 保存原始monitor用于尺寸计算
+		//Save the original monitor for size calculation
 		Monitor *oldmon = c->mon;
 		c->scratchpad_switching_mon = true;
 		c->mon = selmon;
 		reset_foreign_tolevel(c, oldmon, c->mon);
 		client_update_oldmonname_record(c, selmon);
 
-		// 根据新monitor调整窗口尺寸
+		//Adjust the window size according to the new monitor
 		c->float_geom.width =
 			(int32_t)(c->float_geom.width * c->mon->w.width / oldmon->w.width);
 		c->float_geom.height = (int32_t)(c->float_geom.height *
@@ -210,7 +210,7 @@ bool switch_scratchpad_client_state(Client *c) {
 		c->float_geom =
 			setclient_coordinate_center(c, c->mon, c->float_geom, 0, 0);
 
-		// 只有显示状态的scratchpad才需要聚焦和返回true
+		//Only the scratchpad that displays the status needs to be focused and return true
 		if (c->is_scratchpad_show) {
 			c->tags = get_tags_first_tag(selmon->tagset[selmon->seltags]);
 			resize(c, c->float_geom, 0);
@@ -298,59 +298,59 @@ void handlesig(int32_t signo) {
 }
 
 void toggle_hotarea(int32_t x_root, int32_t y_root) {
-	// 左下角热区坐标计算,兼容多显示屏
+	// Calculate the coordinates of the hot zone in the lower left corner, compatible with multiple displays
 	Arg arg = {0};
 
-	// 在刚启动的时候,selmon为NULL,但鼠标可能已经处于热区,
-	// 必须判断避免奔溃
+	// When first started, selmon is NULL, but the mouse may already be in the hot zone.
+	// Must make judgments to avoid crashing
 	if (!selmon)
 		return;
 
 	if (grabc)
 		return;
 
-	// 根据热角位置计算不同的热区坐标
+	// Calculate different hot zone coordinates based on hot angle positions
 	unsigned hx, hy;
 
 	switch (config.hotarea_corner) {
-	case BOTTOM_RIGHT: // 右下角
+	case BOTTOM_RIGHT: //lower right corner
 		hx = selmon->m.x + selmon->m.width - config.hotarea_size;
 		hy = selmon->m.y + selmon->m.height - config.hotarea_size;
 		break;
-	case TOP_LEFT: // 左上角
+	case TOP_LEFT: //upper left corner
 		hx = selmon->m.x + config.hotarea_size;
 		hy = selmon->m.y + config.hotarea_size;
 		break;
-	case TOP_RIGHT: // 右上角
+	case TOP_RIGHT: //upper right corner
 		hx = selmon->m.x + selmon->m.width - config.hotarea_size;
 		hy = selmon->m.y + config.hotarea_size;
 		break;
-	case BOTTOM_LEFT: // 左下角（默认）
+	case BOTTOM_LEFT: //Lower left corner (default)
 	default:
 		hx = selmon->m.x + config.hotarea_size;
 		hy = selmon->m.y + selmon->m.height - config.hotarea_size;
 		break;
 	}
 
-	// 判断鼠标是否在热区内
+	// Determine whether the mouse is in the hot zone
 	int in_hotarea = 0;
 
 	switch (config.hotarea_corner) {
-	case BOTTOM_RIGHT: // 右下角
+	case BOTTOM_RIGHT: //lower right corner
 		in_hotarea = (y_root > hy && x_root > hx &&
 					  x_root <= (selmon->m.x + selmon->m.width) &&
 					  y_root <= (selmon->m.y + selmon->m.height));
 		break;
-	case TOP_LEFT: // 左上角
+	case TOP_LEFT: //upper left corner
 		in_hotarea = (y_root < hy && x_root < hx && x_root >= selmon->m.x &&
 					  y_root >= selmon->m.y);
 		break;
-	case TOP_RIGHT: // 右上角
+	case TOP_RIGHT: //upper right corner
 		in_hotarea = (y_root < hy && x_root > hx &&
 					  x_root <= (selmon->m.x + selmon->m.width) &&
 					  y_root >= selmon->m.y);
 		break;
-	case BOTTOM_LEFT: // 左下角（默认）
+	case BOTTOM_LEFT: //Lower left corner (default)
 	default:
 		in_hotarea = (y_root > hy && x_root < hx && x_root >= selmon->m.x &&
 					  y_root <= (selmon->m.y + selmon->m.height));

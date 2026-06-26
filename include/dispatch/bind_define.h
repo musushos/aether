@@ -725,7 +725,7 @@ int32_t set_proportion(const Arg *arg) {
 	if (!tc)
 		return 0;
 
-	/* 获取堆叠头部客户端 */
+	/* Get stack header client */
 	tc = scroll_get_stack_head_client(tc);
 	if (!tc)
 		return 0;
@@ -738,12 +738,12 @@ int32_t set_proportion(const Arg *arg) {
 	if (st)
 		node = find_scroller_node(st, tc);
 
-	/* 同时更新节点和客户端字段 */
+	/* Update node and client fields at the same time */
 	if (node)
 		node->scroller_proportion = arg->f;
 	tc->scroller_proportion = arg->f;
 
-	/* 可选的即时几何更新，arrange 时会重新计算 */
+	/* Optional real-time geometry update, will be recalculated when arrange */
 	uint32_t max_client_width =
 		m->w.width - 2 * config.scroller_structs - config.gappih;
 	tc->geom.width = max_client_width * arg->f;
@@ -783,11 +783,11 @@ int32_t switch_proportion_preset(const Arg *arg) {
 	if (st)
 		node = find_scroller_node(st, tc);
 
-	/* 优先从节点读取当前比例，以确保切换基于正确的值 */
+	/* Prioritize reading the current scale from the node to ensure that switching is based on the correct value */
 	float current_proportion =
 		node ? node->scroller_proportion : tc->scroller_proportion;
 
-	/* 查找预设目标 */
+	/* Find the default target */
 	for (int32_t i = 0; i < config.scroller_proportion_preset_count; i++) {
 		if (config.scroller_proportion_preset[i] == current_proportion) {
 			if (arg->i == NEXT) {
@@ -812,7 +812,7 @@ int32_t switch_proportion_preset(const Arg *arg) {
 	if (target_proportion == 0.0f)
 		target_proportion = config.scroller_proportion_preset[0];
 
-	/* 更新节点和客户端 */
+	/* Update node and client */
 	if (node)
 		node->scroller_proportion = target_proportion;
 	tc->scroller_proportion = target_proportion;
@@ -1037,7 +1037,7 @@ int32_t spawn_shell(const Arg *arg) {
 		return 0;
 
 	if (fork() == 0) {
-		// 1. 忽略可能导致 coredump 的信号
+		// 1. Ignore signals that may cause coredump
 		signal(SIGSEGV, SIG_IGN);
 		signal(SIGABRT, SIG_IGN);
 		signal(SIGILL, SIG_IGN);
@@ -1064,7 +1064,7 @@ int32_t spawn(const Arg *arg) {
 		return 0;
 
 	if (fork() == 0) {
-		// 1. 忽略可能导致 coredump 的信号
+		// 1. Ignore signals that may cause coredump
 		signal(SIGSEGV, SIG_IGN);
 		signal(SIGABRT, SIG_IGN);
 		signal(SIGILL, SIG_IGN);
@@ -1072,20 +1072,20 @@ int32_t spawn(const Arg *arg) {
 		dup2(STDERR_FILENO, STDOUT_FILENO);
 		setsid();
 
-		// 2. 对整个参数字符串进行单词展开
+		// 2. Perform word expansion on the entire parameter string
 		wordexp_t p;
 		if (wordexp(arg->v, &p, 0) != 0) {
 			wlr_log(WLR_DEBUG, "aether: wordexp failed for '%s'\n", arg->v);
 			_exit(EXIT_FAILURE);
 		}
 
-		// 3. 执行命令（p.we_wordv 已经是 argv 数组）
+		// 3. Execute the command (p.we_wordv is already the argv array)
 		execvp(p.we_wordv[0], p.we_wordv);
 
-		// 4. execvp 失败时：打印错误，释放 wordexp 资源，然后退出
+		// 4. When execvp fails: print error, release wordexp resources, and then exit
 		wlr_log(WLR_DEBUG, "aether: execvp '%s' failed: %s\n", p.we_wordv[0],
 				strerror(errno));
-		wordfree(&p); // 释放 wordexp 分配的内存
+		wordfree(&p); // Release the memory allocated by wordexp
 		_exit(EXIT_FAILURE);
 	}
 	return 0;
@@ -1123,7 +1123,7 @@ int32_t switch_keyboard_layout(const Arg *arg) {
 		return 0;
 	}
 
-	// 1. 获取当前布局和计算下一个布局
+	// 1. Get the current layout and calculate the next layout
 	xkb_layout_index_t current = xkb_state_serialize_layout(
 		keyboard->xkb_state, XKB_STATE_LAYOUT_EFFECTIVE);
 	const int32_t num_layouts = xkb_keymap_num_layouts(keyboard->keymap);
@@ -1139,14 +1139,14 @@ int32_t switch_keyboard_layout(const Arg *arg) {
 		next = (current + 1) % num_layouts;
 	}
 
-	// 6. 应用新 keymap
+	// 6. Apply new keymap
 	uint32_t depressed = keyboard->modifiers.depressed;
 	uint32_t latched = keyboard->modifiers.latched;
 	uint32_t locked = keyboard->modifiers.locked;
 
 	wlr_keyboard_notify_modifiers(keyboard, depressed, latched, locked, next);
 
-	// 7. 更新 seat
+	// 7. Update seat
 	wlr_seat_set_keyboard(seat, keyboard);
 	wlr_seat_keyboard_notify_modifiers(seat, &keyboard->modifiers);
 
@@ -1159,7 +1159,7 @@ int32_t switch_keyboard_layout(const Arg *arg) {
 		struct wlr_keyboard *tkb = (struct wlr_keyboard *)id->device_data;
 
 		wlr_keyboard_notify_modifiers(tkb, depressed, latched, locked, next);
-		// 7. 更新 seat
+		// 7. Update seat
 		wlr_seat_set_keyboard(seat, tkb);
 		wlr_seat_keyboard_notify_modifiers(seat, &tkb->modifiers);
 	}
@@ -1280,8 +1280,8 @@ int32_t tagmon(const Arg *arg) {
 	selmon = c->mon;
 	c->float_geom = setclient_coordinate_center(c, c->mon, c->float_geom, 0, 0);
 
-	// 重新计算居中的坐标
-	// 重新计算居中的坐标
+	// Recalculate the center coordinates
+	// Recalculate the center coordinates
 	if (c->isfloating) {
 		c->geom = c->float_geom;
 		target = get_tags_first_tag(c->tags);
@@ -1818,8 +1818,8 @@ int32_t toggleoverview(const Arg *arg) {
 		return 0;
 	}
 
-	// 正常视图到overview,退出所有窗口的浮动和全屏状态参与平铺,
-	// overview到正常视图,还原之前退出的浮动和全屏窗口状态
+	// From normal view to overview, exit the floating and full-screen states of all windows to participate in tiling,
+	//Overview to normal view, restore the floating and full-screen window status that was previously exited
 	if (selmon->isoverview) {
 		wl_list_for_each(c, &clients, link) {
 			if (c && c->mon == selmon && !client_is_unmanaged(c) &&
@@ -1903,7 +1903,7 @@ int32_t scroller_apply_stack(Client *c, Client *target_client,
 
 	struct TagScrollerState *st = ensure_scroller_state(m, tag);
 
-	/* 获取当前节点 */
+	/* Get the current node */
 	struct ScrollerStackNode *cnode = find_scroller_node(st, c);
 
 	if (!cnode)
@@ -1912,20 +1912,20 @@ int32_t scroller_apply_stack(Client *c, Client *target_client,
 	struct ScrollerStackNode *tnode =
 		target_client ? find_scroller_node(st, target_client) : NULL;
 
-	/* 若方向为 UNDIR 且有目标，直接插入到目标尾部 */
+	/* If the direction is UNDIR and there is a target, insert directly to the end of the target */
 	if (direction == UNDIR && target_client && target_client->mon == c->mon) {
 		scroller_insert_stack(c, target_client, false);
 		return 0;
 	}
 
-	/* 处理从堆叠中移出的情况（方向 LEFT/UP 或 RIGHT/DOWN） */
+	/* Handle removal from the stack (direction LEFT/UP or RIGHT/DOWN) */
 	if (cnode->prev_in_stack || cnode->next_in_stack) {
 		struct ScrollerStackNode *move_out_refer_node =
 			cnode->prev_in_stack ? cnode->prev_in_stack : cnode->next_in_stack;
 		scroller_node_remove(st, cnode);
 
-		// 必须先更新，不然里面节点还存着的是cnode的信息，
-		// 会造成stach_head/stack_tail指向的客户端不对
+		// It must be updated first, otherwise the node inside will still contain cnode information.
+		// This will cause the client pointed to by stach_head/stack_tail to be incorrect.
 		update_scroller_state(c->mon);
 
 		Client *stack_head =
@@ -1952,12 +1952,12 @@ int32_t scroller_apply_stack(Client *c, Client *target_client,
 	if (!tnode || target_client->mon != c->mon)
 		return 0;
 
-	/* 找到目标堆叠的尾部节点 */
+	/* Find the tail node of the target stack */
 	struct ScrollerStackNode *tail = tnode;
 	while (tail->next_in_stack)
 		tail = tail->next_in_stack;
 
-	/* 通过封装好的插入函数实现（尾部插入） */
+	/* Implemented through encapsulated insertion function (tail insertion) */
 	scroller_insert_stack(c, tail->client, false);
 
 	if (c != tail->client) {

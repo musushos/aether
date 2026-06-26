@@ -99,14 +99,14 @@ static void aether_ipc_output_destroy(struct wl_resource *resource) {
 	free(ipc_output);
 }
 
-// 修改IPC输出函数，接受掩码参数
+// Modify the IPC output function to accept mask parameters
 void aether_ipc_output_printstatus(Monitor *monitor) {
 	aetherIpcOutput *ipc_output;
 	wl_list_for_each(ipc_output, &monitor->aether_ipc_outputs, link)
 		aether_ipc_output_printstatus_to(ipc_output);
 }
 
-// 修改主IPC输出函数，根据掩码发送相应事件
+// Modify the main IPC output function and send corresponding events according to the mask
 void aether_ipc_output_printstatus_to(aetherIpcOutput *ipc_output) {
 	Monitor *monitor = ipc_output->mon;
 	Client *c = NULL, *focused = NULL;

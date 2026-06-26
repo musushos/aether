@@ -39,8 +39,8 @@ void set_minimized(Client *c) {
 		wlr_foreign_toplevel_handle_v1_set_activated(c->foreign_toplevel,
 													 false);
 
-	wl_list_remove(&c->link);				// 从原来位置移除
-	wl_list_insert(clients.prev, &c->link); // 插入尾部
+	wl_list_remove(&c->link);				//Remove from original position
+	wl_list_insert(clients.prev, &c->link); //Insert the tail
 }
 
 void minimizenotify(struct wl_listener *listener, void *data) {
@@ -387,7 +387,7 @@ void pointerfocus(Client *c, struct wlr_surface *surface, double sx, double sy,
 	wlr_seat_pointer_notify_motion(seat, time, sx, sy);
 }
 
-// 修改printstatus函数，接受掩码参数
+// Modify the printstatus function to accept mask parameters
 void printstatus(void) { wl_signal_emit(&aether_print_status, NULL); }
 
 void powermgrsetmode(struct wl_listener *listener, void *data) {
@@ -470,7 +470,7 @@ void rendermon(struct wl_listener *listener, void *data) {
 
 	frame_allow_tearing = check_tearing_frame_allow(m);
 
-	// 绘制层和淡出效果
+	// Draw layer and fade out effect
 	for (i = 0; i < LENGTH(m->layers); i++) {
 		layer_list = &m->layers[i];
 		wl_list_for_each_safe(l, tmpl, layer_list, link) {
@@ -486,7 +486,7 @@ void rendermon(struct wl_listener *listener, void *data) {
 		need_more_frames = layer_draw_fadeout_frame(l) || need_more_frames;
 	}
 
-	// 绘制客户端
+	// draw client
 	wl_list_for_each(c, &clients, link) {
 		need_more_frames = client_draw_frame(c) || need_more_frames;
 		if (!config.animations && !grabc && c->configure_serial &&
@@ -500,7 +500,7 @@ void rendermon(struct wl_listener *listener, void *data) {
 		monitor_stop_skip_frame_timer(m);
 	}
 
-	// 只有在需要帧时才构建和提交状态
+	// Build and commit state only when frames are needed
 	if (config.allow_tearing && frame_allow_tearing) {
 		apply_tear_state(m);
 	} else {
@@ -508,11 +508,11 @@ void rendermon(struct wl_listener *listener, void *data) {
 	}
 
 skip:
-	// 发送帧完成通知
+	//Send frame completion notification
 	clock_gettime(CLOCK_MONOTONIC, &now);
 	wlr_scene_output_send_frame_done(m->scene_output, &now);
 
-	// 如果需要更多帧，确保安排下一帧
+	// If more frames are needed, make sure to schedule the next one
 	if (need_more_frames && allow_frame_scheduling) {
 		request_fresh_all_monitors();
 	}
@@ -523,11 +523,11 @@ void requestdecorationmode(struct wl_listener *listener, void *data) {
 	struct wlr_xdg_toplevel_decoration_v1 *deco = data;
 
 	if (c->surface.xdg->initialized) {
-		// 获取客户端请求的模式
+		// Get the mode requested by the client
 		enum wlr_xdg_toplevel_decoration_v1_mode requested_mode =
 			deco->requested_mode;
 
-		// 如果客户端没有指定，使用默认模式
+		// If not specified by the client, use the default mode
 		if (!c->allow_csd) {
 			requested_mode = WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE;
 		}
@@ -614,12 +614,12 @@ void exchange_two_client(Client *c1, Client *c2) {
 
 	if (n1 && n2) {
 
-		/* 跨显示器且任一方有堆叠关系时不允许交换 */
+		/* Swapping is not allowed when there is a stacking relationship between monitors and either side */
 		if (m1 != m2 && (n1->prev_in_stack || n2->prev_in_stack ||
 						 n1->next_in_stack || n2->next_in_stack))
 			return;
 
-		/* 获取各自的堆叠头节点 */
+		/* Get the respective stack head node */
 		struct ScrollerStackNode *head1 = n1;
 		while (head1->prev_in_stack)
 			head1 = head1->prev_in_stack;
@@ -627,7 +627,7 @@ void exchange_two_client(Client *c1, Client *c2) {
 		while (head2->prev_in_stack)
 			head2 = head2->prev_in_stack;
 
-		/* 同一堆叠内交换 */
+		/* Exchange within the same stack */
 		if (head1 == head2) {
 			float tmp_scroller = n1->scroller_proportion;
 			float tmp_stack = n1->stack_proportion;
@@ -636,7 +636,7 @@ void exchange_two_client(Client *c1, Client *c2) {
 			n2->scroller_proportion = tmp_scroller;
 			n2->stack_proportion = tmp_stack;
 
-			/* 交换堆叠链表指针 */
+			/* Swap stacked linked list pointers */
 			struct ScrollerStackNode *p1 = n1->prev_in_stack;
 			struct ScrollerStackNode *next1 = n1->next_in_stack;
 			struct ScrollerStackNode *p2 = n2->prev_in_stack;
@@ -678,9 +678,9 @@ void exchange_two_client(Client *c1, Client *c2) {
 			sync_scroller_state_to_clients(m1, tag1);
 			arrange(m1, false, false);
 		} else {
-			/* 不同堆叠：交换两个堆叠整体位置 */
+			/* Different stacks: swap the overall positions of the two stacks */
 			if (n1 != head1 || n2 != head2) {
-				/* 当前不是头部，递归交换头部 */
+				/* Currently not the head, recursively exchange the head */
 				exchange_two_client(head1->client, head2->client);
 				return;
 			}
@@ -689,7 +689,7 @@ void exchange_two_client(Client *c1, Client *c2) {
 
 exchange_common:
 
-	/* 跨显示器且任一方有堆叠关系时不允许交换 */
+	/* Swapping is not allowed when there is a stacking relationship between monitors and either side */
 	if (m1 != m2 && ((n1 && n1->prev_in_stack) || (n2 && n2->prev_in_stack) ||
 					 (n1 && n1->next_in_stack) || (n2 && n2->next_in_stack)))
 		return;

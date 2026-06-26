@@ -32,7 +32,7 @@ void tag_client(const Arg *arg, Client *target_client) {
 }
 
 
-// 目标窗口有其他窗口和它同个tag就返回0
+// If the target window has other windows with the same tag, 0 will be returned.
 uint32_t want_restore_fullscreen(Client *target_client) {
 	Client *c = NULL;
 	wl_list_for_each(c, &clients, link) {
@@ -49,7 +49,7 @@ uint32_t want_restore_fullscreen(Client *target_client) {
 	return 1;
 }
 
-// 普通视图切换到overview时保存窗口的旧状态
+// Save the old state of the window when switching from normal view to overview
 void overview_backup(Client *c) {
 	c->overview_isfloatingbak = c->isfloating;
 	c->overview_isfullscreenbak = c->isfullscreen;
@@ -64,7 +64,7 @@ void overview_backup(Client *c) {
 		c->isfloating = 0;
 	}
 	if (c->isfullscreen || c->ismaximizescreen) {
-		client_pending_fullscreen_state(c, 0); // 清除窗口全屏标志
+		client_pending_fullscreen_state(c, 0); //Clear the window full screen flag
 		client_pending_maximized_state(c, 0);
 	}
 	c->bw = c->isnoborder ? 0 : config.borderpx;
@@ -73,7 +73,7 @@ void overview_backup(Client *c) {
 							WLR_EDGE_RIGHT);
 }
 
-// overview切回到普通视图还原窗口的状态
+//Overview switches back to normal view to restore the state of the window
 void overview_restore(Client *c, const Arg *arg) {
 	c->isfloating = c->overview_isfloatingbak;
 	c->isfullscreen = c->overview_isfullscreenbak;
@@ -87,7 +87,7 @@ void overview_restore(Client *c, const Arg *arg) {
 	c->is_restoring_from_ov = (arg->ui & c->tags & TAGMASK) == 0 ? true : false;
 
 	if (c->isfloating) {
-		// XRaiseWindow(dpy, c->win); // 提升悬浮窗口到顶层
+		// XRaiseWindow(dpy, c->win); // Raise the floating window to the top
 		resize(c, c->overview_backup_geom, 0);
 	} else if (c->isfullscreen || c->ismaximizescreen) {
 		if (want_restore_fullscreen(c) && c->ismaximizescreen) {
@@ -107,7 +107,7 @@ void overview_restore(Client *c, const Arg *arg) {
 	}
 
 	if (c->bw == 0 &&
-		!c->isfullscreen) { // 如果是在ov模式中创建的窗口,没有bw记录
+		!c->isfullscreen) { // If the window is created in ov mode, there is no bw record
 		c->bw = c->isnoborder ? 0 : config.borderpx;
 	}
 
@@ -655,7 +655,7 @@ void fix_xwayland_unmanaged_coordinate(Client *c) {
 	if (!selmon)
 		return;
 
-	// 1. 如果窗口已经在当前活动显示器内，直接返回
+	// 1. If the window is already in the currently active display, return directly
 	if (c->geom.x >= selmon->m.x && c->geom.x < selmon->m.x + selmon->m.width &&
 		c->geom.y >= selmon->m.y && c->geom.y < selmon->m.y + selmon->m.height)
 		return;

@@ -5,18 +5,18 @@
 
 void free_circle_layout(Config *config) {
 	if (config->circle_layout) {
-		// 释放每个字符串
+		// Free each string
 		for (int32_t i = 0; i < config->circle_layout_count; i++) {
 			if (config->circle_layout[i]) {
-				free(config->circle_layout[i]);	 // 释放单个字符串
-				config->circle_layout[i] = NULL; // 防止野指针
+				free(config->circle_layout[i]);	 // Release a single string
+				config->circle_layout[i] = NULL; // Prevent wild pointers
 			}
 		}
-		// 释放 circle_layout 数组本身
+		// Release the circle_layout array itself
 		free(config->circle_layout);
-		config->circle_layout = NULL; // 防止野指针
+		config->circle_layout = NULL; // Prevent wild pointers
 	}
-	config->circle_layout_count = 0; // 重置计数
+	config->circle_layout_count = 0; //Reset count
 }
 
 void free_baked_points(void) {
@@ -51,10 +51,10 @@ void free_baked_points(void) {
 }
 
 void free_config(void) {
-	// 释放内存
+	// release memory
 	int32_t i;
 
-	// 释放 window_rules
+	// Release window_rules
 	if (config.window_rules) {
 		for (int32_t i = 0; i < config.window_rules_count; i++) {
 			ConfigWinRule *rule = &config.window_rules[i];
@@ -73,7 +73,7 @@ void free_config(void) {
 			rule->animation_type_open = NULL;
 			rule->animation_type_close = NULL;
 			rule->monitor = NULL;
-			// 释放 globalkeybinding 的 arg.v（如果动态分配）
+			// Release arg.v of globalkeybinding (if dynamically allocated)
 			if (rule->globalkeybinding.arg.v) {
 				free((void *)rule->globalkeybinding.arg.v);
 			}
@@ -83,7 +83,7 @@ void free_config(void) {
 		config.window_rules_count = 0;
 	}
 
-	// 释放 key_bindings
+	// Release key_bindings
 	if (config.key_bindings) {
 		for (i = 0; i < config.key_bindings_count; i++) {
 			if (config.key_bindings[i].arg.v) {
@@ -104,7 +104,7 @@ void free_config(void) {
 		config.key_bindings_count = 0;
 	}
 
-	// 释放 mouse_bindings
+	// Release mouse_bindings
 	if (config.mouse_bindings) {
 		for (i = 0; i < config.mouse_bindings_count; i++) {
 			if (config.mouse_bindings[i].arg.v) {
@@ -125,7 +125,7 @@ void free_config(void) {
 		config.mouse_bindings_count = 0;
 	}
 
-	// 释放 axis_bindings
+	// Release axis_bindings
 	if (config.axis_bindings) {
 		for (i = 0; i < config.axis_bindings_count; i++) {
 			if (config.axis_bindings[i].arg.v) {
@@ -146,7 +146,7 @@ void free_config(void) {
 		config.axis_bindings_count = 0;
 	}
 
-	// 释放 switch_bindings
+	// Release switch_bindings
 	if (config.switch_bindings) {
 		for (i = 0; i < config.switch_bindings_count; i++) {
 			if (config.switch_bindings[i].arg.v) {
@@ -167,7 +167,7 @@ void free_config(void) {
 		config.switch_bindings_count = 0;
 	}
 
-	// 释放 gesture_bindings
+	// Release gesture_bindings
 	if (config.gesture_bindings) {
 		for (i = 0; i < config.gesture_bindings_count; i++) {
 			if (config.gesture_bindings[i].arg.v) {
@@ -188,7 +188,7 @@ void free_config(void) {
 		config.gesture_bindings_count = 0;
 	}
 
-	// 释放 tag_rules
+	// Release tag_rules
 	if (config.tag_rules) {
 		for (int32_t i = 0; i < config.tag_rules_count; i++) {
 			if (config.tag_rules[i].layout_name)
@@ -207,7 +207,7 @@ void free_config(void) {
 		config.tag_rules_count = 0;
 	}
 
-	// 释放 monitor_rules
+	// Release monitor_rules
 	if (config.monitor_rules) {
 		for (int32_t i = 0; i < config.monitor_rules_count; i++) {
 			if (config.monitor_rules[i].name)
@@ -224,7 +224,7 @@ void free_config(void) {
 		config.monitor_rules_count = 0;
 	}
 
-	// 释放 layer_rules
+	// Release layer_rules
 	if (config.layer_rules) {
 		for (int32_t i = 0; i < config.layer_rules_count; i++) {
 			if (config.layer_rules[i].layer_name)
@@ -239,7 +239,7 @@ void free_config(void) {
 		config.layer_rules_count = 0;
 	}
 
-	// 释放 env
+	// release env
 	if (config.env) {
 		for (int32_t i = 0; i < config.env_count; i++) {
 			if (config.env[i]->type) {
@@ -255,7 +255,7 @@ void free_config(void) {
 		config.env_count = 0;
 	}
 
-	// 释放 exec
+	// release exec
 	if (config.exec) {
 		for (i = 0; i < config.exec_count; i++) {
 			free(config.exec[i]);
@@ -265,7 +265,7 @@ void free_config(void) {
 		config.exec_count = 0;
 	}
 
-	// 释放 exec_once
+	// Release exec_once
 	if (config.exec_once) {
 		for (i = 0; i < config.exec_once_count; i++) {
 			free(config.exec_once[i]);
@@ -275,7 +275,7 @@ void free_config(void) {
 		config.exec_once_count = 0;
 	}
 
-	// 释放 scroller_proportion_preset
+	// Release scroller_proportion_preset
 	if (config.scroller_proportion_preset) {
 		free(config.scroller_proportion_preset);
 		config.scroller_proportion_preset = NULL;
@@ -287,13 +287,13 @@ void free_config(void) {
 		config.cursor_theme = NULL;
 	}
 
-	// 释放 circle_layout
+	// Release circle_layout
 	free_circle_layout(&config);
 
-	// 释放动画资源
+	// Release animation resources
 	free_baked_points();
 
-	// 清理解析按键用的keymap
+	// Clean up the keymap used to parse keys
 	cleanup_config_keymap();
 }
 

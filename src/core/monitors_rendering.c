@@ -565,7 +565,7 @@ mapnotify(struct wl_listener *listener, void *data) {
 
 	if (config.new_is_master && selmon && !is_scroller_layout(selmon))
 		// tile at the top
-		wl_list_insert(&clients, &c->link); // 新窗口是master,头部入栈
+		wl_list_insert(&clients, &c->link); // The new window is the master, and the head is pushed onto the stack
 	else if (selmon && is_scroller_layout(selmon) &&
 			 selmon->visible_scroll_tiling_clients > 0) {
 
@@ -579,10 +579,10 @@ mapnotify(struct wl_listener *listener, void *data) {
 		if (at_client) {
 			wl_list_insert(&at_client->link, &c->link);
 		} else {
-			wl_list_insert(clients.prev, &c->link); // 尾部入栈
+			wl_list_insert(clients.prev, &c->link); // Push the tail onto the stack
 		}
 	} else
-		wl_list_insert(clients.prev, &c->link); // 尾部入栈
+		wl_list_insert(clients.prev, &c->link); // Push the tail onto the stack
 
 	wl_list_insert(&fstack, &c->flink);
 

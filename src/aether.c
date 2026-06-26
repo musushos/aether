@@ -160,7 +160,7 @@ typedef enum {
 	EDGE_SNAP_BOTTOM_RIGHT,
 } EdgeSnapZone;
 enum { XDGShell, LayerShell, X11 };					/* client types */
-enum { AxisUp, AxisDown, AxisLeft, AxisRight };		// 滚轮滚动的方向
+enum { AxisUp, AxisDown, AxisLeft, AxisRight };		//The direction in which the wheel rolls
 enum {
 	LyrBg,
 	LyrBlur,
@@ -200,7 +200,7 @@ enum seat_config_shortcuts_inhibit {
 	SHORTCUTS_INHIBIT_ENABLE,
 };
 
-// 事件掩码枚举
+//Event mask enumeration
 enum print_event_type {
 	PRINT_ACTIVE = 1 << 0,
 	PRINT_TAG = 1 << 1,
@@ -219,7 +219,7 @@ enum print_event_type {
 	PRINT_KEYMODE = 1 << 14,
 	PRINT_SCALEFACTOR = 1 << 15,
 	PRINT_FRAME = 1 << 16,
-	PRINT_ALL = (1 << 17) - 1 // 所有位都设为1
+	PRINT_ALL = (1 << 17) - 1 // Set all bits to 1
 };
 
 typedef struct Pertag Pertag;
@@ -252,7 +252,7 @@ typedef struct {
 	uint32_t button;
 	int32_t (*func)(const Arg *);
 	const Arg arg;
-} Button; // 鼠标按键
+} Button; //Mouse buttons
 
 typedef struct {
 	char mode[28];
@@ -270,8 +270,8 @@ typedef struct {
 	struct wl_list link;
 	struct wlr_input_device *wlr_device;
 	struct libinput_device *libinput_device;
-	struct wl_listener destroy_listener; // 用于监听设备销毁事件
-	void *device_data;					 // 新增：指向设备特定数据（如 Switch）
+	struct wl_listener destroy_listener; // Used to listen for device destruction events
+	void *device_data;					 // New: points to device-specific data (such as Switch)
 } InputDevice;
 
 typedef struct {
@@ -588,25 +588,25 @@ struct ScrollerStackNode {
 };
 
 struct TagScrollerState {
-	struct ScrollerStackNode *all_first; /* 所有节点的单链表头 */
+	struct ScrollerStackNode *all_first; /* Single linked list header of all nodes */
 	int count;
 };
 
 /* function declarations */
 static void applybounds(
 	Client *c,
-	struct wlr_box *bbox); // 设置边界规则,能让一些窗口拥有比较适合的大小
-static void applyrules(Client *c); // 窗口规则应用,应用config.h中定义的窗口规则
+	struct wlr_box *bbox); // Set boundary rules to allow some windows to have a more suitable size
+static void applyrules(Client *c); // Window rule application, apply the window rules defined in config.h
 static void arrange(Monitor *m, bool want_animation,
-					bool from_view); // 布局函数,让窗口俺平铺规则移动和重置大小
+					bool from_view); //Layout function, let the window move and resize according to the tiling rules
 static void arrangelayer(Monitor *m, struct wl_list *list,
 						 struct wlr_box *usable_area, int32_t exclusive);
 static void arrangelayers(Monitor *m);
 static void handle_print_status(struct wl_listener *listener, void *data);
 static void axisnotify(struct wl_listener *listener,
-					   void *data); // 滚轮事件处理
+					   void *data); //Roller event handling
 static void buttonpress(struct wl_listener *listener,
-						void *data); // 鼠标按键事件处理
+						void *data); //Mouse button event processing
 static int32_t ongesture(struct wlr_pointer_swipe_end_event *event);
 static void swipe_begin(struct wl_listener *listener, void *data);
 static void swipe_update(struct wl_listener *listener, void *data);
@@ -617,11 +617,11 @@ static void pinch_end(struct wl_listener *listener, void *data);
 static void hold_begin(struct wl_listener *listener, void *data);
 static void hold_end(struct wl_listener *listener, void *data);
 static void checkidleinhibitor(struct wlr_surface *exclude);
-static void cleanup(void);										  // 退出清理
-static void cleanupmon(struct wl_listener *listener, void *data); // 退出清理
+static void cleanup(void);										  // Exit cleanup
+static void cleanupmon(struct wl_listener *listener, void *data); // Exit cleanup
 static void closemon(Monitor *m);
 static void cleanuplisteners(void);
-static void toggle_hotarea(int32_t x_root, int32_t y_root); // 触发热区
+static void toggle_hotarea(int32_t x_root, int32_t y_root); //Trigger hot zone
 static void maplayersurfacenotify(struct wl_listener *listener, void *data);
 static void commitlayersurfacenotify(struct wl_listener *listener, void *data);
 static void commitnotify(struct wl_listener *listener, void *data);
